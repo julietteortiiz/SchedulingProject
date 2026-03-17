@@ -4,16 +4,23 @@ from collections import OrderedDict
 
 
 
+pref_file = ""
 if len(sys.argv) > 1:
-    pref_list = sys.argv[1]
- #   constraints = sys.argv[2]
- #   data = sys.argv[3]
+    pref_file = sys.argv[1]
 else:
     print("Usage: algorithms.py <pref_list> <constraints> <data>")
 
 
-
-
+i = -1
+pref_list = []
+with open(pref_file, 'r') as pref_unclean:
+    for line in pref_unclean:
+        if i == -1:
+            i += 1  
+            continue
+        pref_list.append(line.split())
+        i += 1
+print(pref_list)
 
 
 class Class:
@@ -26,18 +33,27 @@ class Class:
 
 
 
-
 def compute_overlap(pref_list):
     over = {}
     for student_list in pref_list:
-        for i in range(2):
+        for i in range(1, 4):
             current = student_list[i]
-            for j in range(i+1, 3):
+            for j in range(i+1, 4):
                 next = student_list[j]
-                over[(current, next)] = over[(current, next)] + 1
+                temp = ""
+                if int(next) < int(current):
+                    temp = current
+                    current = next
+                    next = temp
+                print(current, next)
+                if (current, next) in over:
+                    over[(current, next)] = over[(current, next)] + 1
+                else: 
+                    over[(current, next)] = 1
 
     overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1]))   
     return overlap
 
 
-compute_overlap(pref_list) 
+print(compute_overlap(pref_list))
+

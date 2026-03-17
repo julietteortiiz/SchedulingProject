@@ -1,13 +1,13 @@
 import sys
-
+from collections import OrderedDict
 
 
 
 
 if len(sys.argv) > 1:
     pref_list = sys.argv[1]
-    constraints = sys.argv[2]
-    data = sys.argv[3]
+ #   constraints = sys.argv[2]
+ #   data = sys.argv[3]
 else:
     print("Usage: algorithms.py <pref_list> <constraints> <data>")
 
@@ -16,14 +16,13 @@ else:
 
 
 
-class Class
+class Class:
     def __init__(self, ID, teacherID, pref_count, room, room_size, overlap):
         self.ID = ID
         self.teacherID = teacherID
         self.pref_count = pref_count
         self.room =  room
         self.room_size = room_size
-#       self.overlap # [0, 1, 0, 1, 1 ,1, 0], where index is other classes and value is 0: no overlap and 1: overlap
 
 
 
@@ -37,5 +36,8 @@ def compute_overlap(pref_list):
                 next = student_list[j]
                 over[(current, next)] = over[(current, next)] + 1
 
-    
-    overlap = {}
+    overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1]))   
+    return overlap
+
+
+compute_overlap(pref_list) 

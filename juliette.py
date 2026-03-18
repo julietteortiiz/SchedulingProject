@@ -41,9 +41,47 @@ def compute_overlap(pref_list):
                 else:
                     over[(current,second)] = 1
 
-    overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1]))   
-    print(overlap)
+    overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1], reverse = True))   
+    return overlap
+
+Times = [1, 2, 3, 4]
+Rooms = [1, 2, 3, 4]
+Teachers = {1:(12,13), 2:(6,2), 3:(10,5), 4:(8,9), 5:(1,11), 6:(3,4), 7:(14,7)}
+
+def schedule(overlap):
+    SC = [0] * 14
+    for pair in overlap:
+        classA = pair[0]
+        classB = pair[1]
+        ScheduledA = SC[classA - 1]
+        ScheduledB = SC[classB - 1] 
+        if ScheduledA != 0 and ScheduledB != 0:
+            continue
+        if ScheduledA != 0 and ScheduledB == 0: 
+            
+#when scheduling need to first check that there's an avilable time slot
+#that doesn't induce 
+def findSlot(classID, overlapTime, conflictTime, scheduledClasses):
+    check = []
+    for i in range(1,14):
+        if i != overlapTime or i != conflictTime:
+            check.append(i)
+    for time in check:
+        if NULL in scheduledClasses[time]:
+            print("Found Slot!")
+            return time
+    
 
 
-compute_overlap(pref_list) 
+
+
+
+
+             
+
+
+
+#MAIN
+overlap = compute_overlap(pref_list) 
+schedule(overlap)
 

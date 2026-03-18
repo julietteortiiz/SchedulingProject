@@ -33,13 +33,18 @@ class Class:
 
 
 
-popularity = [0] * 15 
+popularity = {}
+pop = {}
 def compute_overlap(pref_list):
     over = {}
+    
     for student_list in pref_list:
         for i in range(1, 5):
             current = int(student_list[i])
-            popularity[current] += 1
+            if current in pop:
+                pop[current] += 1
+            else:
+                pop[current] = 1
             for j in range(i+1, 5):
                 nxt = int(student_list[j])
                 pair = (min(current, nxt), max(current, nxt))
@@ -49,12 +54,12 @@ def compute_overlap(pref_list):
                     over[pair] = over[pair] + 1
                 else: 
                     over[pair] = 1
-    print(popularity)
     overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1], reverse=True)) 
-    return overlap
+    popularity = dict(sorted(pop.items(), key=lambda item: item[1], reverse=True))
+    return overlap, popularity
 
 
-overlap_conflict = compute_overlap(pref_list)
+overlap_conflict, popularity = compute_overlap(pref_list)
 
 # we need overlapping
 # now we need rank class popularity
@@ -62,16 +67,24 @@ overlap_conflict = compute_overlap(pref_list)
 
 j = 0
 teacher_conflict = [0] * 15
+class_teacher = []
+
 with open(sys.argv[2], "r") as contraints_file:
     for line in contraints_file:
         if j < 8:
             j +=1
             continue
-        clss = int(line.split()[0])
-        teacher_conflict[clss] = int(line.split()[1])
+        class_teacher.append(line.split())
 
-
+for a in class_teacher:
+    tchr1 = int(a[1])
+    for b in class_teacher:
+        tchr2 = int(b[1])
+        if tchr1 == tchr2 and a[0] != b[0]:
+            teacher_conflict[int(a[0])] = int(b[0])
+            teacher_conflict[int(b[0])] = int(a[0])
 # avoid overlap class and teacher class
+
 time_slots = {}
 times = 4
 for time in range (1, times+1):
@@ -91,12 +104,23 @@ def divide_into_slots(overlap_conflict, teacher_conflict):
                 if clss[0] not in time_slots[key] and teacher_conflict[clss[1]] not in time_slots[key] and len(time_slots[key]) < 4:
                     time_slots[key].append(clss[1])
                     break
-#def divide_into rooms
+
+room_slots = {}
+rooms = 4
+room_sizes = [0, 84, 89, 18, 59]
+for room in range (1, rooms+1):
+    room_slots[room] = []
+def divide_into_rooms(popularity):
+    slots  = 4
+    for pop in popularity:
+        
+
+    
 
 
 divide_into_slots(overlap_conflict, teacher_conflict)
 print(overlap_conflict)
 print(teacher_conflict)
 print(time_slots)
-
+print(popularity)
 

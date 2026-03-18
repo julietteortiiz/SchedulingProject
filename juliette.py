@@ -46,18 +46,23 @@ def compute_overlap(pref_list):
 
 Times = [1, 2, 3, 4]
 Rooms = [1, 2, 3, 4]
-Teachers = {1:(12,13), 2:(6,2), 3:(10,5), 4:(8,9), 5:(1,11), 6:(3,4), 7:(14,7)}
+Teachers = {1:5, 2:2, 3:6, 4:6, 5:3, 6: 2, 7:7, 8:4, 9:4, 10:3, 11:5, 12:1, 13:1, 14:7}
 
 def schedule(overlap):
     SC = [0] * 14
+    scheduledClasses = {}
+    for time in Times:
+        scheduledClasses[time] = (0,0,0,0)
+    print(scheduledClasses)
     for pair in overlap:
         classA = pair[0]
         classB = pair[1]
         ScheduledA = SC[classA - 1]
         ScheduledB = SC[classB - 1] 
-        if ScheduledA != 0 and ScheduledB != 0:
+        if ScheduledA == 0 and ScheduledB == 0:
             continue
-        if ScheduledA != 0 and ScheduledB == 0: 
+
+
             
 #when scheduling need to first check that there's an avilable time slot
 #that doesn't induce 

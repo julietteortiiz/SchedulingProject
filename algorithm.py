@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     pref_file = sys.argv[1]
     
 else:
-    print("Usage: algorithms.py <pref_list> <constraints> <data>")
+    print("Usage: algorithm.py <pref_list> <constraints> <data>")
 
 
 i = -1
@@ -30,8 +30,6 @@ class Class:
         self.pref_count = pref_count
         self.room =  room
         self.room_size = room_size
-
-
 
 popularity = {}
 pop = {}
@@ -110,17 +108,36 @@ rooms = 4
 room_sizes = [0, 84, 89, 18, 59]
 for room in range (1, rooms+1):
     room_slots[room] = []
+
 def divide_into_rooms(popularity):
-    slots  = 4
-    for pop in popularity:
-        
+    room_lst = {}
 
+    sorted_rooms = sorted(range(1, len(room_sizes)), key=lambda r: room_sizes[r], reverse=True)
+
+    for t in time_slots:
+        classes = time_slots[t]
+
+        sorted_classes = sorted(classes, key=lambda c: popularity.get(c, 0), reverse=True)
+
+        room_lst[t] = {}
+
+        for i in range(len(sorted_classes)):
+            r = sorted_rooms[i]
+            cls = sorted_classes[i]
+            room_lst[t][r] = cls
+
+    return room_lst
+
+
+overlap_conflict, popularity = compute_overlap(pref_list)
+divide_into_slots(overlap_conflict, teacher_conflict)
+print(time_slots)
+room_slots = divide_into_rooms(popularity)
+print(room_slots)
     
-
 
 divide_into_slots(overlap_conflict, teacher_conflict)
 print(overlap_conflict)
 print(teacher_conflict)
 print(time_slots)
 print(popularity)
-

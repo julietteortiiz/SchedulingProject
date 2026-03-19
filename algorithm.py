@@ -1,29 +1,16 @@
+#IMPORTS
 import sys
 from collections import OrderedDict
 
+# NOTES:
+# 1. Need to adjust code for different sized INPUTS
+# 2. is there a way to get rid of globals?
+# 3. I think code will look better and be more easily updated for real data if we avoid global 
+# variables and global data structures
+# 4. I think some data structures can be rid of if we create the class objects sooner an just directly update 
+# certain values like teacher ID. 
 
-
-
-pref_file = ""
-if len(sys.argv) > 1:
-    pref_file = sys.argv[1]
-    
-else:
-    print("Usage: algorithm.py <pref_list> <constraints> <data>")
-
-#construct preference list
-
-i = -1
-pref_list = []
-with open(pref_file, 'r') as pref_unclean:
-    for line in pref_unclean:
-        if i == -1:
-            i += 1  
-            continue
-        pref_list.append(line.split())
-        i += 1
-
-#class object definition
+#DATA STRUCTURES AND GLOBAL VARIABLES
 class Class:
     def __init__(self, ID, teacherID, time, room):
         self.ID = ID
@@ -32,9 +19,69 @@ class Class:
         self.room =  room
         self.students = []
 
-#create the overlap dictionary and the list of classes based off popularity
+i = -1 #for construction preference list
+pref_list = []
 popularity = {}
-pop = {}
+j = 0 #for constructing teacher conflict
+teacher_conflict = [0] * 15 #[0,10,4,...] says 10 conflicts with 1, 4 conflicts with 2
+class_teacher = [] #['class','teacher]...
+cID_IID = {} #{class:teacher}
+pop = {} #for compute overlap
+time_slots = {}
+times = 4
+room_slots = {}
+rooms = 4
+room_sizes = [0, 84, 89, 18, 59]
+
+
+
+#READ INPUTS
+pref_file = ""
+if len(sys.argv) > 1:
+    pref_file = sys.argv[1]
+    
+else:
+    print("Usage: algorithm.py <pref_list> <constraints> <data>")
+
+
+with open(pref_file, 'r') as pref_unclean:
+    for line in pref_unclean:
+        if i == -1:
+            i += 1  
+            continue
+        pref_list.append(line.split())
+        i += 1
+
+with open(sys.argv[2], "r") as contraints_file:
+    for line in contraints_file:
+        if j < 8:
+            j +=1
+            continue
+        class_teacher.append(line.split())
+
+
+#FUNCTIONS
+
+#create time slots
+for time in range (1, times+1):
+    time_slots[time] = []
+
+#create room slots
+for room in range (1, rooms+1):
+    room_slots[room] = []
+
+#create teacher conflict
+for a in class_teacher:
+    tchr1 = int(a[1])
+    cID_IID[int(a[0])] = tchr1
+    for b in class_teacher:
+        tchr2 = int(b[1])
+        if tchr1 == tchr2 and a[0] != b[0]:
+            teacher_conflict[int(a[0])] = int(b[0])
+            teacher_conflict[int(b[0])] = int(a[0])
+
+
+#create the overlap dictionary and the list of classes based off popularity
 def compute_overlap(pref_list):
     over = {}
     
@@ -58,43 +105,8 @@ def compute_overlap(pref_list):
     popularity = dict(sorted(pop.items(), key=lambda item: item[1], reverse=True))
     return overlap, popularity
 
-
-overlap_conflict, popularity = compute_overlap(pref_list)
-
-#we need overlapping
-# now we need rank class popularity
-
-#read in constraints and get teachers
-
-j = 0
-teacher_conflict = [0] * 15
-class_teacher = []
-cID_IID = {} #for easy class/teacher lookup
-
-with open(sys.argv[2], "r") as contraints_file:
-    for line in contraints_file:
-        if j < 8:
-            j +=1
-            continue
-        class_teacher.append(line.split())
-
-for a in class_teacher:
-    tchr1 = int(a[1])
-    cID_IID[int(a[0])] = tchr1
-    for b in class_teacher:
-        tchr2 = int(b[1])
-        if tchr1 == tchr2 and a[0] != b[0]:
-            teacher_conflict[int(a[0])] = int(b[0])
-            teacher_conflict[int(b[0])] = int(a[0])
-    
-# avoid overlap class and teacher class
-
-#create time slots
-time_slots = {}
-times = 4
-for time in range (1, times+1):
-    time_slots[time] = []
-#I think this is going to create issues if there ends up not being any available slots
+#Assign classes to time slots
+# Notes: I think this is going to create issues if there ends up not being any available slots
 def divide_into_slots(overlap_conflict, teacher_conflict):
 
     for clss in overlap_conflict:
@@ -110,13 +122,9 @@ def divide_into_slots(overlap_conflict, teacher_conflict):
                     time_slots[key].append(clss[1])
                     break
 
-room_slots = {}
-rooms = 4
-room_sizes = [0, 84, 89, 18, 59]
-for room in range (1, rooms+1):
-    room_slots[room] = []
 
-#For each time slot assign the most popular class to the largest room and so on
+
+#Take classes (now in times slots) and assign them rooms based on popularity
 def divide_into_rooms(popularity):
     room_lst = {}
 
@@ -137,9 +145,6 @@ def divide_into_rooms(popularity):
     return room_lst
 
 
-overlap_conflict, popularity = compute_overlap(pref_list)
-divide_into_slots(overlap_conflict, teacher_conflict)
-room_slots = divide_into_rooms(popularity)
 
 #Take the scheduled classes and the preference lists and create all the class objects
 #created a dictionary to easily fetch the teacher id for each class
@@ -168,12 +173,14 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             else:
                 couldnt_enroll_count = couldnt_enroll_count + 1
     
+    #This is line for checking optimality
     #print("Couldnt enroll " + str(couldnt_enroll_count))
     #opt = ((50 * 4) - couldnt_enroll_count) / (50 * 4)
     #print("Opt " + str(opt))
             
     return sorted_objects
-          
+
+#Write output to stdout, in makefile this will create our_schedule.txt        
 def output_schedule(objects_list):
     sys.stdout.write("Course	Room	Teacher	Time	Students\n")
     for clss in objects_list:
@@ -184,27 +191,14 @@ def output_schedule(objects_list):
         sys.stdout.write(output)
         sys.stdout.write("\n") 
             
-            
+
+
+#MAIN, FUNCTION CALLS
+overlap_conflict, popularity = compute_overlap(pref_list)
+divide_into_slots(overlap_conflict, teacher_conflict)
+room_slots = divide_into_rooms(popularity)
 objects_list = create_class_objects(room_slots, pref_list, cID_IID)
 output_schedule(objects_list)
-#print("\nOverlap Conflict") 
-#print(overlap_conflict)
-#print("\n Popularity")
-#print(popularity)
-#print("\n Teacher Conflict")
-#print(teacher_conflict)
-#print("\n Time Slots")
-#print(time_slots)
-#Room Slots are going to be {1: {1:100, 2:200, 3:300, 4:400}}
-#This says in time slot 1: class 100 is in room 1...
-#print("\n Room Slots")
-#print(room_slots)
-
-#This takes in the scheduled classes (room_slots) from algorithm
-#and enrolls students into the classes, reports optimality, and writes
-#to a schedule text
-#print("\n pref list")
-#print(pref_list)
 
 
 

@@ -11,6 +11,7 @@ if len(sys.argv) > 1:
 else:
     print("Usage: algorithm.py <pref_list> <constraints> <data>")
 
+#construct preference list
 
 i = -1
 pref_list = []
@@ -22,15 +23,16 @@ with open(pref_file, 'r') as pref_unclean:
         pref_list.append(line.split())
         i += 1
 
-
+#class object definition
 class Class:
-    def __init__(self, ID, teacherID, pref_count, room, room_size, overlap):
+    def __init__(self, ID, teacherID, time, room):
         self.ID = ID
         self.teacherID = teacherID
-        self.pref_count = pref_count
+        self.time = time
         self.room =  room
-        self.room_size = room_size
+        self.students = []
 
+#create the overlap dictionary and the list of classes based off popularity
 popularity = {}
 pop = {}
 def compute_overlap(pref_list):
@@ -59,13 +61,15 @@ def compute_overlap(pref_list):
 
 overlap_conflict, popularity = compute_overlap(pref_list)
 
-# we need overlapping
+#we need overlapping
 # now we need rank class popularity
 
+#read in constraints and get teachers
 
 j = 0
 teacher_conflict = [0] * 15
 class_teacher = []
+cID_IID = {} #for easy class/teacher lookup
 
 with open(sys.argv[2], "r") as contraints_file:
     for line in contraints_file:
@@ -76,18 +80,21 @@ with open(sys.argv[2], "r") as contraints_file:
 
 for a in class_teacher:
     tchr1 = int(a[1])
+    cID_IID[int(a[0])] = tchr1
     for b in class_teacher:
         tchr2 = int(b[1])
         if tchr1 == tchr2 and a[0] != b[0]:
             teacher_conflict[int(a[0])] = int(b[0])
             teacher_conflict[int(b[0])] = int(a[0])
+    
 # avoid overlap class and teacher class
 
+#create time slots
 time_slots = {}
 times = 4
 for time in range (1, times+1):
     time_slots[time] = []
-
+#I think this is going to create issues if there ends up not being any available slots
 def divide_into_slots(overlap_conflict, teacher_conflict):
 
     for clss in overlap_conflict:
@@ -109,6 +116,7 @@ room_sizes = [0, 84, 89, 18, 59]
 for room in range (1, rooms+1):
     room_slots[room] = []
 
+#For each time slot assign the most popular class to the largest room and so on
 def divide_into_rooms(popularity):
     room_lst = {}
 
@@ -131,13 +139,56 @@ def divide_into_rooms(popularity):
 
 overlap_conflict, popularity = compute_overlap(pref_list)
 divide_into_slots(overlap_conflict, teacher_conflict)
-print(time_slots)
 room_slots = divide_into_rooms(popularity)
-print(room_slots)
+
+#Take the scheduled classes and the preference lists and create all the class objects
+#created a dictionary to easily fetch the teacher id for each class
+def create_class_objects(room_slots, pref_list, cID_IID):
+    objects = []
+    for time, pair in room_slots.items():
+        for room, clss in pair.items():
+            name = "class" + str(clss)
+            teacherID = cID_IID[clss]
+            temp = Class(clss,teacherID,time, room)
+            name = temp
+            objects.append(name)
+    sorted_objects = sorted(objects, key=lambda x: x.ID)
+    for list in pref_list:
+        studentID = int(list[0])
+        for i in range(1,4):
+            clssID = int(list[i])
+            class_Class = sorted_objects[clssID-1]
+            class_Class.students.append(studentID)
+    
+            
+      
+          
     
 
-divide_into_slots(overlap_conflict, teacher_conflict)
-print(overlap_conflict)
+
+
+            
+            
+create_class_objects(room_slots, pref_list, cID_IID)
+#print("\nOverlap Conflict") 
+#print(overlap_conflict)
+#print("\n Popularity")
+#print(popularity)
+print("\n Teacher Conflict")
 print(teacher_conflict)
-print(time_slots)
-print(popularity)
+#print("\n Time Slots")
+#print(time_slots)
+#Room Slots are going to be {1: {1:100, 2:200, 3:300, 4:400}}
+#This says in time slot 1: class 100 is in room 1...
+print("\n Room Slots")
+print(room_slots)
+
+#This takes in the scheduled classes (room_slots) from algorithm
+#and enrolls students into the classes, reports optimality, and writes
+#to a schedule text
+#print("\n pref list")
+#print(pref_list)
+
+
+
+

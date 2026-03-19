@@ -153,35 +153,52 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
+    couldnt_enroll_count = 0
     for list in pref_list:
         studentID = int(list[0])
+        times_enrolled = [0,0,0,0]
         for i in range(1,4):
             clssID = int(list[i])
             class_Class = sorted_objects[clssID-1]
-            class_Class.students.append(studentID)
+            #for each class on pref list check that student is available
+            #at that time, else don't enroll them and count 
+            if times_enrolled[class_Class.time - 1] == 0:
+                times_enrolled[class_Class.time - 1] = 1
+                class_Class.students.append(studentID)
+            else:
+                couldnt_enroll_count = couldnt_enroll_count + 1
     
+    #print("Couldnt enroll " + str(couldnt_enroll_count))
+    #opt = ((50 * 4) - couldnt_enroll_count) / (50 * 4)
+    #print("Opt " + str(opt))
             
-      
+    return sorted_objects
           
-    
-
-
-
+def output_schedule(objects_list):
+    sys.stdout.write("Course	Room	Teacher	Time	Students\n")
+    for clss in objects_list:
+        string = ""
+        for student in clss.students:
+            string = string + str(student) + " "
+        output = str(clss.ID) + "\t" + str(clss.room) + "\t" + str(clss.teacherID) + "\t" + str(clss.time) + "\t" + string
+        sys.stdout.write(output)
+        sys.stdout.write("\n") 
             
             
-create_class_objects(room_slots, pref_list, cID_IID)
+objects_list = create_class_objects(room_slots, pref_list, cID_IID)
+output_schedule(objects_list)
 #print("\nOverlap Conflict") 
 #print(overlap_conflict)
 #print("\n Popularity")
 #print(popularity)
-print("\n Teacher Conflict")
-print(teacher_conflict)
+#print("\n Teacher Conflict")
+#print(teacher_conflict)
 #print("\n Time Slots")
 #print(time_slots)
 #Room Slots are going to be {1: {1:100, 2:200, 3:300, 4:400}}
 #This says in time slot 1: class 100 is in room 1...
-print("\n Room Slots")
-print(room_slots)
+#print("\n Room Slots")
+#print(room_slots)
 
 #This takes in the scheduled classes (room_slots) from algorithm
 #and enrolls students into the classes, reports optimality, and writes

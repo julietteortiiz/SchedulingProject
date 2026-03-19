@@ -105,10 +105,41 @@ def compute_overlap(pref_list):
     popularity = dict(sorted(pop.items(), key=lambda item: item[1], reverse=True))
     return overlap, popularity
 
-#Assign classes to time slots
-# Notes: I think this is going to create issues if there ends up not being any available slots
-def divide_into_slots(overlap_conflict, teacher_conflict):
 
+overlap_conflict, popularity = compute_overlap(pref_list)
+
+# we need overlapping
+# now we need rank class popularity
+
+
+j = 0
+teacher_conflict = [0] * 15
+class_teacher = []
+
+with open(sys.argv[2], "r") as contraints_file:
+    for line in contraints_file:
+        if j < 8:
+            j +=1
+            continue
+        class_teacher.append(line.split())
+
+for a in class_teacher:
+    tchr1 = int(a[1])
+    for b in class_teacher:
+        tchr2 = int(b[1])
+        if tchr1 == tchr2 and a[0] != b[0]:
+            teacher_conflict[int(a[0])] = int(b[0])
+            teacher_conflict[int(b[0])] = int(a[0])
+# avoid overlap class and teacher class
+
+time_slots = {}
+times = 4
+for time in range (1, times+1):
+    time_slots[time] = []
+
+def divide_into_slots(overlap_conflict, teacher_conflict):
+    times = 4
+    time_slots = {time: [] for time in range(1, times + 1)} 
     for clss in overlap_conflict:
         if all(clss[0] not in slot for slot in time_slots.values()):
             for key in time_slots:
@@ -121,10 +152,15 @@ def divide_into_slots(overlap_conflict, teacher_conflict):
                 if clss[0] not in time_slots[key] and teacher_conflict[clss[1]] not in time_slots[key] and len(time_slots[key]) < 4:
                     time_slots[key].append(clss[1])
                     break
+    return time_slots
 
 
+room_slots = {}
+rooms = 4
+room_sizes = [0, 84, 89, 18, 59]
+for room in range (1, rooms+1):
+    room_slots[room] = []
 
-#Take classes (now in times slots) and assign them rooms based on popularity
 def divide_into_rooms(popularity):
     room_lst = {}
 
@@ -196,10 +232,13 @@ def output_schedule(objects_list):
 #MAIN, FUNCTION CALLS
 overlap_conflict, popularity = compute_overlap(pref_list)
 divide_into_slots(overlap_conflict, teacher_conflict)
+print(time_slots)
 room_slots = divide_into_rooms(popularity)
-objects_list = create_class_objects(room_slots, pref_list, cID_IID)
-output_schedule(objects_list)
+print(room_slots)
+    
 
-
-
-
+divide_into_slots(overlap_conflict, teacher_conflict)
+print(overlap_conflict)
+print(teacher_conflict)
+print(time_slots)
+print(popularity)

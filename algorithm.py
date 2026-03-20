@@ -23,54 +23,73 @@ i = -1 #for construction preference list
 pref_list = []
 popularity = {}
 j = 0 #for constructing teacher conflict
-teacher_conflict = [0] * 15 #[0,10,4,...] says 10 conflicts with 1, 4 conflicts with 2
 class_teacher = [] #['class','teacher]...
 cID_IID = {} #{class:teacher}
 pop = {} #for compute overlap
-time_slots = {}
-times = 4
+num_of_class_times = 0
+num_of_rooms = 0
+num_of_classes = 0
+num_of_teachers = 0
+num_of_students = 0
+room_sizes = []
 room_slots = {}
-rooms = 4
-room_sizes = [0, 84, 89, 18, 59]
-
-
+time_slots = {}
 
 #READ INPUTS
-pref_file = ""
-if len(sys.argv) > 1:
-    pref_file = sys.argv[1]
-    
-else:
-    print("Usage: algorithm.py <pref_list> <constraints> <data>")
+if len(sys.argv) < 1:
+    print("Usage: algorithm.py <pref_list> <constraints> ")
+    exit
 
-
-with open(pref_file, 'r') as pref_unclean:
+with open(sys.argv[1], 'r') as pref_unclean:
     for line in pref_unclean:
+        processed_line = line.split()
         if i == -1:
             i += 1  
+            num_of_students = int(processed_line[1])
             continue
-        pref_list.append(line.split())
+        pref_list.append(processed_line)
         i += 1
 
-with open(sys.argv[2], "r") as contraints_file:
-    for line in contraints_file:
-        if j < 8:
-            j +=1
-            continue
-        class_teacher.append(line.split())
+with open(sys.argv[2], "r") as constraints_file:
+    line_number = 0
+    reading_rooms = False
+    rooms_read = 0
+    for line in constraints_file:
+        processed_line = line.split()
+        if line_number == 0:
+            num_of_class_times = int(processed_line[2])
+        elif line_number == 1:
+            num_of_rooms = int(processed_line[1])
+            room_sizes.append(0)
+            reading_rooms = True
 
+        elif reading_rooms == True: 
+            room_sizes.append(int(processed_line[1]))
+            rooms_read += 1    
+
+            if rooms_read == num_of_rooms:
+                reading_rooms = False
+        elif processed_line[0] == "Classes":
+            num_of_classes = int(processed_line[1])
+        elif processed_line[0] == "Teachers":
+            num_of_teachers = int(processed_line[1])
+            for line in constraints_file:
+                class_teacher.append(line.split())
+        line_number += 1
 
 #FUNCTIONS
 
 #create time slots
-for time in range (1, times+1):
+for time in range (1, num_of_class_times+1):
     time_slots[time] = []
 
 #create room slots
-for room in range (1, rooms+1):
+for room in range (1, num_of_rooms+1):
     room_slots[room] = []
 
+
 #create teacher conflict
+teacher_conflict = [0] * (num_of_classes + 1)
 for a in class_teacher:
     tchr1 = int(a[1])
     cID_IID[int(a[0])] = tchr1
@@ -112,15 +131,29 @@ def divide_into_slots(overlap_conflict, teacher_conflict):
     for clss in overlap_conflict:
         if all(clss[0] not in slot for slot in time_slots.values()):
             for key in time_slots:
-                if clss[1] not in time_slots[key] and teacher_conflict[clss[0]] not in time_slots[key] and len(time_slots[key]) < 4:
+                if clss[1] not in time_slots[key] and teacher_conflict[clss[0]] not in time_slots[key] and len(time_slots[key]) < num_of_rooms:
                     time_slots[key].append(clss[0])
                     break
     
         if all(clss[1] not in slot for slot in time_slots.values()):
             for key in time_slots:
-                if clss[0] not in time_slots[key] and teacher_conflict[clss[1]] not in time_slots[key] and len(time_slots[key]) < 4:
+                if clss[0] not in time_slots[key] and teacher_conflict[clss[1]] not in time_slots[key] and len(time_slots[key]) < num_of_rooms:
                     time_slots[key].append(clss[1])
                     break
+    # if a class wasn't scheduled, schedule it in a an empty slot
+    all_classes = set(range(1, num_of_classes + 1))
+    scheduled = set()
+    for slot in time_slots.values():
+        scheduled.update(slot)
+    missing = all_classes - scheduled
+
+    for clss in missing:
+        placed = False
+        for key in time_slots:
+            if len(time_slots[key]) < num_of_rooms:
+                time_slots[key].append(clss)
+                placed = True
+                break
 
 
 
@@ -144,8 +177,6 @@ def divide_into_rooms(popularity):
 
     return room_lst
 
-
-
 #Take the scheduled classes and the preference lists and create all the class objects
 #created a dictionary to easily fetch the teacher id for each class
 def create_class_objects(room_slots, pref_list, cID_IID):
@@ -155,29 +186,31 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = "class" + str(clss)
             teacherID = cID_IID[clss]
             temp = Class(clss,teacherID,time, room)
+            temp.capacity = room_sizes[room]
+            temp.students = []
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
     couldnt_enroll_count = 0
     for list in pref_list:
         studentID = int(list[0])
-        times_enrolled = [0,0,0,0]
-        for i in range(1,4):
+        times_enrolled = [0] * num_of_class_times
+        for i in range(1,5):
             clssID = int(list[i])
             class_Class = sorted_objects[clssID-1]
             #for each class on pref list check that student is available
-            #at that time, else don't enroll them and count 
-            if times_enrolled[class_Class.time - 1] == 0:
-                times_enrolled[class_Class.time - 1] = 1
+            #at that time, else don't enroll them and count
+             
+            if times_enrolled[class_Class.time-1] == 0 and len(class_Class.students) < class_Class.capacity:
+                times_enrolled[class_Class.time-1] = 1
                 class_Class.students.append(studentID)
             else:
                 couldnt_enroll_count = couldnt_enroll_count + 1
     
     #This is line for checking optimality
     #print("Couldnt enroll " + str(couldnt_enroll_count))
-    #opt = ((50 * 4) - couldnt_enroll_count) / (50 * 4)
+    #opt = ((num_of_students * 4) - couldnt_enroll_count) / (num_of_students * 4)
     #print("Opt " + str(opt))
-            
     return sorted_objects
 
 #Write output to stdout, in makefile this will create our_schedule.txt        
@@ -199,7 +232,4 @@ divide_into_slots(overlap_conflict, teacher_conflict)
 room_slots = divide_into_rooms(popularity)
 objects_list = create_class_objects(room_slots, pref_list, cID_IID)
 output_schedule(objects_list)
-
-
-
 

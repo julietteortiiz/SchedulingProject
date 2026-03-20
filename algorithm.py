@@ -10,6 +10,8 @@ from collections import OrderedDict
 # 4. I think some data structures can be rid of if we create the class objects sooner an just directly update 
 # certain values like teacher ID. 
 
+#input: time = x, room = y
+
 #DATA STRUCTURES AND GLOBAL VARIABLES
 class Class:
     def __init__(self, ID, teacherID, time, room):
@@ -30,8 +32,8 @@ pop = {} #for compute overlap
 time_slots = {}
 times = 4
 room_slots = {}
-rooms = 4
-room_sizes = [0, 84, 89, 18, 59]
+rooms = 4 #get this from constraints
+room_sizes = [0, 84, 89, 18, 59] #how do we get this from the constraints
 
 
 
@@ -62,7 +64,9 @@ with open(sys.argv[2], "r") as contraints_file:
 
 #FUNCTIONS
 
+#one option, just create a times slots[] with and index is times-1, reduces for loop, no real difference though
 #create time slots
+#optimization idea; array of arrays, guess no real differnce though
 for time in range (1, times+1):
     time_slots[time] = []
 

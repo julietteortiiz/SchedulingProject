@@ -1,0 +1,4 @@
+Student preference value: 4623
+Best case: 20000
+Fit percentage: 0.23115
+Time: 0.04769706726074219

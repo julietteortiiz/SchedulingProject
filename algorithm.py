@@ -233,7 +233,7 @@ fit = actual_value / best_value
 end = tm.time()
 
 print("Student preference value:", actual_value)
-print("Best case student preference value:", best_value)
+print("Best case:", best_value)
 print("Fit percentage:", fit)
 print("Time:", end - start)
     

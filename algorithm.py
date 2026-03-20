@@ -162,7 +162,7 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
-    couldnt_enroll_count = 0
+    enrolled_count = 0
     for list in pref_list:
         studentID = int(list[0])
         times_enrolled = [0,0,0,0]
@@ -174,13 +174,17 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             if times_enrolled[class_Class.time - 1] == 0:
                 times_enrolled[class_Class.time - 1] = 1
                 class_Class.students.append(studentID)
-            else:
-                couldnt_enroll_count = couldnt_enroll_count + 1
+                enrolled_count = enrolled_count + 1
+            
+    # print("Enrolled")
+    # print(enrolled_count)
+
     
-    #This is line for checking optimality
-    #print("Couldnt enroll " + str(couldnt_enroll_count))
-    #opt = ((50 * 4) - couldnt_enroll_count) / (50 * 4)
-    #print("Opt " + str(opt))
+    # for clss in sorted_objects:
+    #     pop = popularity.get(clss.ID)
+    #     enroll = len(clss.students)
+    #     opti = pop - enroll
+    #     print(clss.ID, pop, enroll, opti)
             
     return sorted_objects
 

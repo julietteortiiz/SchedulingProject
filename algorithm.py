@@ -158,26 +158,15 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
-    couldnt_enroll_count = 0
     for list in pref_list:
         studentID = int(list[0])
         times_enrolled = [0,0,0,0]
         for i in range(1,4):
             clssID = int(list[i])
             class_Class = sorted_objects[clssID-1]
-            #for each class on pref list check that student is available
-            #at that time, else don't enroll them and count 
             if times_enrolled[class_Class.time - 1] == 0:
                 times_enrolled[class_Class.time - 1] = 1
-                class_Class.students.append(studentID)
-            else:
-                couldnt_enroll_count = couldnt_enroll_count + 1
-    
-    #This is line for checking optimality
-    #print("Couldnt enroll " + str(couldnt_enroll_count))
-    #opt = ((50 * 4) - couldnt_enroll_count) / (50 * 4)
-    #print("Opt " + str(opt))
-            
+                class_Class.students.append(studentID)       
     return sorted_objects
 
 #Write output to stdout, in makefile this will create our_schedule.txt        

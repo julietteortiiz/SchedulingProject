@@ -9,12 +9,12 @@ from collections import OrderedDict
 class College:
     def __init__(self, name):
         self.name = name
-        self.buildings = {# building objects : list of departments}
+        self.buildings = []
 class Building:
-    def __init__(self, ID, name, rooms):
+    def __init__(self, ID, name, rooms=None):
         self.ID = ID
         self.name = name
-        self.rooms = [# room objects]
+        self.rooms = rooms if rooms is not None else []
         self.dept = ""
         self.popularity = []            
 
@@ -25,38 +25,44 @@ class Room:
     def __init__(self, ID, capacity):
         self.ID = ID
         self.capacity = capacity
-        self.schedule  [[#class objects]] # rows represent times and columns represent weekdays always 5 
+        self.schedule = []
 
 class Class:
-    def __init__(self, ID, college, dept, popularity, teacherID, day_frequency, credit_hours):
+    def __init__(self, ID, *args):
+        self.ID = int(ID)
+        self.building = ""
+        self.dept_popularity = -1
+        self.room = ""
+        self.days = ""
+        self.time = ""
+        self.students = []
 
-        # input data
-        self.ID = ID # assigned at creation
-        self.college = college # given by constraint file
-        self.dept = dept
-        self.popularity = popularity # calculated from student pref
-        self.teacherID = teacherID # given by constraint file
-        self.day_frequency = day_frequency # given by constraint file
-        self.credit_hours =  credit_hours # given by constraint file
-
-        #################
-
-        # assigned data
-
-        self.building = "" # decided by dept
-        self.dept_popularity = -1 # set by ranking all classes within dept by popularity
-        self.room = "" # given by dept popularity ranking
-        self.days = "" # given by a room's time availability
-        self.time = "" # given by a room's time availability
-        self.students = [] # students who want to take this class
+        if len(args) == 3:
+            teacherID, time, room = args
+            self.college = None
+            self.dept = ""
+            self.popularity = 0
+            self.teacherID = int(teacherID)
+            self.day_frequency = 0
+            self.credit_hours = 0
+            self.time = int(time)
+            self.room = int(room)
+        elif len(args) == 6:
+            college, dept, popularity, teacherID, day_frequency, credit_hours = args
+            self.college = college
+            self.dept = dept
+            self.popularity = popularity
+            self.teacherID = int(teacherID)
+            self.day_frequency = int(day_frequency)
+            self.credit_hours = int(credit_hours)
+        else:
+            raise ValueError("Class expects either 4 total args or 7 total args.")
 
 
 
 
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
-brynmawr.buildings = {carpenter: ["Econ", "Art"], }
-carpenter.rooms = [213, 214, 215]
 
 
 
@@ -72,6 +78,7 @@ j = 0 #for constructing teacher conflict
 class_teacher = [] #['class','teacher]...
 cID_IID = {} #{class:teacher}
 pop = {} #for compute overlap
+all_buildings = {}
 num_of_class_times = 0
 num_of_rooms = 0
 num_of_classes = 0
@@ -82,9 +89,9 @@ room_slots = {}
 time_slots = {}
 
 #READ INPUTS
-if len(sys.argv) < 1:
-    print("Usage: algorithm.py <pref_list> <constraints> ")
-    exit
+if len(sys.argv) < 3:
+    print("Usage: new_algorithm.py <pref_list> <constraints>")
+    sys.exit(1)
 
 with open(sys.argv[1], 'r') as pref_unclean:
     for line in pref_unclean:
@@ -126,106 +133,89 @@ def compute_overlap(pref_list):
 
 
 with open(sys.argv[2], "r") as constraints_file:
-    line_number = 0 
-
     buildings_section = False
     buildings_read = 0
 
     rooms_section = False
     rooms_read = 0
 
-    classes_section = False
     classes_read = 0
-        
-    dept_to_buildings = {
-    # Bryn Mawr
-    "CS": ["Park"],
-    "Physics": ["Park"],
-    "Geology": ["Park"],
-    "Math": ["Dalton"],
+    class_section = False
 
-    # Haverford
-    "Biology": ["Stokes"],
-    "Chemistry": ["Stokes"],
-    "Economics": ["Sharp"],
-    "Psychology": ["Sharp"]
-}
-
-    
     for line in constraints_file:
         processed_line = line.split()
+        if not processed_line or processed_line[0].startswith("#"):
+            continue
+
         if processed_line[0] == "Class" and processed_line[1] == "Times":
             num_of_class_times = int(processed_line[2])
+            continue
 
-        elif processed_line[0] == "Buildings":
+        if processed_line[0] == "Buildings":
             num_of_buildings = int(processed_line[1])
             buildings_section = True
+            rooms_section = False
+            class_section = False
+            continue
 
-        elif buildings_section = True:
-            buildingID = int(processed_line[0])
-            builidng_name = processed_line[2]
-            buildings_room_num = int(processed_line[3])
-            building = Building(buildingID, building_name, buildings_room_num)    
-            match building.name:
-                case "Park":
-                    building.depts = ["CS", "Physics", "Geology"]
-                case "Taylor": 
-                    building.depts = ["Psychology"]
-                case "Dalton":
-                    building.depts = []
-            all_buildings[buildingID] = building
-            if processed_line[1] == "B":    
-                brynmawr.buildings.append(building)
-            else:   
-                haverford.buildings.append(building)
-            buildings_read += 1
-            if buildings_read == num_of_buildings:
-                buildings_section == False
-
-        elif processed_line[0] == "Rooms":
+        if processed_line[0] == "Rooms":
             num_of_rooms = int(processed_line[1])
             room_sizes.append(0)
             rooms_section = True
+            buildings_section = False
+            class_section = False
+            continue
 
-        elif rooms_section == True: 
-
-            roomID = processed_line[0]
-            buildingID = processed_line[1]
-            capacity = processed_line[2]
-            room = Room(roomID, capacity)
-            all_buildings[buildingID].rooms.append(room)
-
-            room_sizes.append(int(processed_line[2]))
-            rooms_read += 1    
-
-            if rooms_read == num_of_rooms:
-                rooms_section = False
-
-        elif processed_line[0] == "Classes":
+        if processed_line[0] == "Classes":
             num_of_classes = int(processed_line[1])
-        elif processed_line[0] == "Teachers":
+            continue
+
+        if processed_line[0] == "Teachers":
             num_of_teachers = int(processed_line[1])
             class_section = True
-        elif class_section = True
-            classID = processed_line[0]
+            buildings_section = False
+            rooms_section = False
+            continue
+
+        if buildings_section and buildings_read < num_of_buildings:
+            buildingID = int(processed_line[0])
+            college_code = processed_line[1]
+            building_name = processed_line[2]
+            building = Building(buildingID, building_name, [])
+            all_buildings[buildingID] = building
+            if college_code == "B":
+                brynmawr.buildings.append(building)
+            else:
+                haverford.buildings.append(building)
+            buildings_read += 1
+            if buildings_read == num_of_buildings:
+                buildings_section = False
+            continue
+
+        if rooms_section and rooms_read < num_of_rooms:
+            roomID = processed_line[0]
+            buildingID = int(processed_line[1])
+            capacity = int(processed_line[2])
+            room = Room(roomID, capacity)
+            if buildingID in all_buildings:
+                all_buildings[buildingID].rooms.append(room)
+            room_sizes.append(capacity)
+            rooms_read += 1
+            if rooms_read == num_of_rooms:
+                rooms_section = False
+            continue
+
+        if class_section and classes_read < num_of_classes:
+            classID = int(processed_line[0])
             dept = processed_line[2]
-            teacherPairID = processed_line[3]
+            pairedClassID = int(processed_line[3])
             credit_hours = processed_line[4]
             day_frequency = processed_line[5]
-            if processed_line[1] == "B":    
-                college = brynmawr
-            else:   
-                college = haverford    
-            classObj = Class(classID,college,dept, popularity[classID], teacherPairID, day_frequency, credit_hours)
-                
-            classObj.building = dept_to_building[dept]
+            teacherID = min(classID, pairedClassID)
+            class_teacher.append([classID, teacherID])
+            cID_IID[classID] = teacherID
             classes_read += 1
-            building.insert_by_popularity(classObj)
-            if classes_read == num_of_classes:  
-                classes_section = False
-            
- 
-        line_number += 1
+            continue
 
 
 
@@ -346,15 +336,27 @@ def create_class_objects(room_slots, pref_list, cID_IID):
     return sorted_objects
 
 #Write output to stdout, in makefile this will create our_schedule.txt        
-def output_schedule(objects_list):
-    sys.stdout.write("Course	Room	Teacher	Time	Students\n")
-    for clss in objects_list:
-        string = ""
-        for student in clss.students:
-            string = string + str(student) + " "
-        output = str(clss.ID) + "\t" + str(clss.room) + "\t" + str(clss.teacherID) + "\t" + str(clss.time) + "\t" + string
-        sys.stdout.write(output)
-        sys.stdout.write("\n") 
+def output_schedule(objects_list, stream=None):
+    if stream is None:
+        stream = sys.stdout
+
+    stream.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+
+    ordered_classes = sorted(objects_list, key=lambda clss: int(clss.ID))
+
+    for clss in ordered_classes:
+        student_text = " ".join(str(student) for student in clss.students)
+        row = "\t".join(
+            [
+                str(clss.ID),
+                str(clss.room),
+                str(clss.teacherID),
+                str(clss.time),
+                student_text,
+            ]
+        )
+        stream.write(row)
+        stream.write("\n")
             
 
 
@@ -364,4 +366,3 @@ divide_into_slots(overlap_conflict, teacher_conflict)
 room_slots = divide_into_rooms(popularity)
 objects_list = create_class_objects(room_slots, pref_list, cID_IID)
 output_schedule(objects_list)
-

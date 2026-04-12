@@ -5,7 +5,6 @@ import math
 from itertools import combinations
 
 
-
 class College:
     def __init__(self, name):
         self.name = name
@@ -55,39 +54,31 @@ class Class:
 
         self.building = "" # decided by dept
         self.dept_popularity = -1 # set by ranking all classes within dept by popularity
-        self.room = "" # given by dept popularity ranking
-        self.days = [] # given by a room's time availability
-        self.time = [] # given by a room's time availability
+        self.room = "" # given by dept popularity ranking, needs to just be id
+        self.days = "" # given by a room's time availability
+        self.time = "" # given by a room's time availability
         self.students = [] # students who want to take this class
-        self.isScheduled = False
+
     def __str__(self):
-        return f"CLASS: ID {self.ID} COLLEGE {self.college} POP {self.popularity} ROOM {self.room} TIME {self.time} DAYS {self.days}"
+        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room)
 
-
+#GLOBALS
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
+class_objects = []
+building_objects = {}
+room_objects = []
 
 
-
-# college object has building objects assigned to 
-
-i = -1 #for construction preference list
-pref_list = []
-popularity = {}
-pop = {} #for compute overlap
-num_of_class_times = 0
-num_of_rooms = 0
-num_of_classes = 0
-num_of_teachers = 0
-num_of_students = 0
-room_sizes = []
 
 #READ INPUTS
 if len(sys.argv) < 1:
     print("Usage: algorithm.py <pref_list> <constraints> ")
     exit
 
+pref_list = []
 with open(sys.argv[1], 'r') as pref_unclean:
+    i = -1
     for line in pref_unclean:
         processed_line = line.split()
         if i == -1:
@@ -97,11 +88,10 @@ with open(sys.argv[1], 'r') as pref_unclean:
         pref_list.append(processed_line)
         i += 1
 
-
-
 #create the overlap dictionary and the list of classes based off popularity
 def compute_overlap(pref_list):
     over = {}
+    pop = {} #for compute overlap
 
     for student_list in pref_list:
         for i in range(1, 5):
@@ -125,6 +115,7 @@ def compute_overlap(pref_list):
 
 
 overlap_conflict, popularity = compute_overlap(pref_list)
+room_sizes = []
 
 
 with open(sys.argv[2], "r") as constraints_file:
@@ -153,15 +144,14 @@ with open(sys.argv[2], "r") as constraints_file:
     "Philosophy" : ["Bettws"],
     # Haverford
     "History": ["Chase"],
-    "Econ": ["Sharp"],
+    "Econ": ["Sharpless"],
     "Math": ["Hilles"],
-    "Psychology": ["Sharp"],
+    "Psychology": ["Sharpless"],
     "Chem":["Stokes"],
     "Political":["Chase"],
     "Music":["Roberts"],
     "Psychology":["Stokes"]
 }
-
 
     for line in constraints_file:
         processed_line = line.split()
@@ -169,22 +159,19 @@ with open(sys.argv[2], "r") as constraints_file:
             num_of_class_times = int(processed_line[2])
 
         elif processed_line[0] == "Buildings":
-            num_of_buildings = int(processed_line[1])
+            num_of_buildings = int(processed_line[1]) 
             all_buildings = [""] * (num_of_buildings + 1)
             buildings_section = True
 
+        #for each building
         elif buildings_section == True:
-            buildingID = int(processed_line[0])
-            building_name = processed_line[2]
-            buildings_room_num = int(processed_line[3])
-            building = Building(buildingID, building_name, buildings_room_num)    
-            match building.name:
-                case "Park":
-                    building.depts = ["CS", "Physics", "Geology"]
-                case "Taylor": 
-                    building.depts = ["Psychology"]
-                case "Dalton":
-                    building.depts = []
+            buildingID = int(processed_line[0]) #give it an ID
+            building_name = processed_line[2] #get it's name
+            buildings_room_num = int(processed_line[3]) #get the number of rooms in the building
+            building = Building(buildingID, building_name, buildings_room_num)  #create building object
+            building_objects[building.name] = building
+             
+            #seperate into buildings       
             all_buildings[buildingID] = building
             if processed_line[1] == "B":    
                 brynmawr.buildings[building] = building.depts
@@ -200,7 +187,6 @@ with open(sys.argv[2], "r") as constraints_file:
             rooms_section = True
 
         elif rooms_section == True: 
-
             roomID = int(processed_line[0])
             buildingID = int(processed_line[1])
             capacity = int(processed_line[2])
@@ -210,6 +196,7 @@ with open(sys.argv[2], "r") as constraints_file:
             room.schedule = [[-1, -1, -1, -1, -1]] * (num_of_class_times + 1)
 
 
+            room_objects.append(room)
 
             room_sizes.append(int(processed_line[2]))
             rooms_read += 1    
@@ -238,9 +225,12 @@ with open(sys.argv[2], "r") as constraints_file:
             classes_read += 1
             building.classes.append(classObj)
             all_classes[classID] = classObj
+
+            b = building_objects.get(classObj.building[0])
+            b.classes.append(classObj)
             if classes_read == num_of_classes:  
                 classes_section = False
-            
+            class_objects.append(classObj)            
  
         line_number += 1
 
@@ -263,7 +253,7 @@ def assign_rooms(Buildings):
         if num_classes == num_rooms or num_classes < num_rooms:
             for i in range(num_classes):
                 current = sorted_classes[i]
-                current.room.append(sorted_rooms[i])
+                current.room = sorted_rooms[i]
 
         #2. len(classes) > len(rooms) -> each room gets assigned multiple classes, prioritize larger rooms
         if num_classes > num_rooms:
@@ -279,11 +269,11 @@ def assign_rooms(Buildings):
                     current_class.room = sorted_rooms[i]
                     del sorted_classes[0]
 
-            for i in range(num_rooms_max_classes):
+            for _ in range(num_rooms_max_classes):
                 del sorted_rooms[0]
 
-            for i in range(num_rooms_min_classes):
-                for j in range(classes_per_room_min):
+            for a in range(num_rooms_min_classes):
+                for b in range(classes_per_room_min):
                     current_class = sorted_classes[0]
                     current_class.room = sorted_rooms[i]
                     del sorted_classes[0]
@@ -353,6 +343,20 @@ assign_rooms(all_buildings)
 assign_times(overlap_conflict)
 for i in all_classes:   
     print(i)
+=======
+def assign_times(overlap_pairs):
+    for pair in overlap_pairs:
+        class1 = pair[0]
+        class2 = pair[1]
+       
+
+#MAIN
+overlap_pairs = compute_overlap(pref_list)
+assign_rooms(building_objects)
+
+for c in class_objects:
+    print(c)
+
 
 
 

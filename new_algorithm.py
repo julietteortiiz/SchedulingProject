@@ -1,7 +1,7 @@
 #IMPORTS
 import sys
 from collections import OrderedDict
-
+import math
 
 
 
@@ -9,24 +9,33 @@ from collections import OrderedDict
 class College:
     def __init__(self, name):
         self.name = name
-        self.buildings = {# building objects : list of departments}
+        self.buildings = {}# building objects : list of departments}
+    def __str__(self):
+        return self.name + " " + self.buildings
 class Building:
     def __init__(self, ID, name, rooms):
         self.ID = ID
         self.name = name
-        self.rooms = [# room objects]
-        self.classes = []
-        self.dept = ""
-  #      self.popularity = []            
-
-   # def insert_by_popularity(self, classObj):
-    #    self.popularity.append(classObj)
+        self.rooms = []# room objects]
+        self.depts = []
+        self.classes = []  
+          
+    def __str__(self):
+        return f"{self.ID} {self.name} {self.rooms}" 
+    def __repr__(self):
+        return f"{self.ID} {self.name} {self.rooms}"
+    def insert_by_popularity(self, classObj):
+        self.popularity.append(classObj)
 
 class Room:
     def __init__(self, ID, capacity):
         self.ID = ID
         self.capacity = capacity
-        self.schedule  [[#class objects]] # rows represent times and columns represent weekdays always 5 
+        self.schedule =  [[]] # rows represent times and columns represent weekdays always 5 
+    def __str__(self):
+        return f"{self.ID} {self.capacity}"
+    def __repr__(self):
+        return f"{self.ID} {self.capacity}"
 
 class Class:
     def __init__(self, ID, college, dept, popularity, teacherID, day_frequency, credit_hours):
@@ -51,16 +60,12 @@ class Class:
         self.time = "" # given by a room's time availability
         self.students = [] # students who want to take this class
 
-
+    def __str__(self):
+        return str(self.ID) + " " + self.dept
 
 
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
-brynmawr.buildings = {carpenter: ["Econ", "Art"], }
-carpenter.rooms = [213, 214, 215]
-
-
-
 
 
 
@@ -124,6 +129,7 @@ def compute_overlap(pref_list):
     return overlap, popularity
 
 
+overlap_conflict, popularity = compute_overlap(pref_list)
 
 
 with open(sys.argv[2], "r") as constraints_file:
@@ -137,19 +143,26 @@ with open(sys.argv[2], "r") as constraints_file:
 
     classes_section = False
     classes_read = 0
-        
+    all_buildings = []
+ 
     dept_to_buildings = {
     # Bryn Mawr
     "CS": ["Park"],
+    "Biology": ["Park"],
     "Physics": ["Park"],
-    "Geology": ["Park"],
-    "Math": ["Dalton"],
-
+    "English" : ["Guild"],
+    "Art" : ["Goodhart"],
+    "Sociology": ["Dalton"],
+    "Philosophy" : ["Bettws"],
     # Haverford
-    "Biology": ["Stokes"],
-    "Chemistry": ["Stokes"],
-    "Economics": ["Sharp"],
-    "Psychology": ["Sharp"]
+    "History": ["Chase"],
+    "Econ": ["Sharp"],
+    "Math": ["Hilles"],
+    "Psychology": ["Sharp"],
+    "Chem":["Stokes"],
+    "Political":["Chase"],
+    "Music":["Roberts"],
+    "Psychology":["Stokes"]
 }
 
 
@@ -160,11 +173,12 @@ with open(sys.argv[2], "r") as constraints_file:
 
         elif processed_line[0] == "Buildings":
             num_of_buildings = int(processed_line[1])
+            all_buildings = [""] * (num_of_buildings + 1)
             buildings_section = True
 
-        elif buildings_section = True:
+        elif buildings_section == True:
             buildingID = int(processed_line[0])
-            builidng_name = processed_line[2]
+            building_name = processed_line[2]
             buildings_room_num = int(processed_line[3])
             building = Building(buildingID, building_name, buildings_room_num)    
             match building.name:
@@ -174,15 +188,14 @@ with open(sys.argv[2], "r") as constraints_file:
                     building.depts = ["Psychology"]
                 case "Dalton":
                     building.depts = []
-            all_buildings.append(building)
+            all_buildings[buildingID] = building
             if processed_line[1] == "B":    
-                brynmawr.buildings.append(building)
+                brynmawr.buildings[building] = building.depts
             else:   
-                haverford.buildings.append(building)
-            
+                haverford.buildings[building] = building.depts
             buildings_read += 1
             if buildings_read == num_of_buildings:
-                buildings_section == False
+                buildings_section = False
 
         elif processed_line[0] == "Rooms":
             num_of_rooms = int(processed_line[1])
@@ -191,9 +204,9 @@ with open(sys.argv[2], "r") as constraints_file:
 
         elif rooms_section == True: 
 
-            roomID = processed_line[0]
-            buildingID = processed_line[1]
-            capacity = processed_line[2]
+            roomID = int(processed_line[0])
+            buildingID = int(processed_line[1])
+            capacity = int(processed_line[2])
             room = Room(roomID, capacity)
             all_buildings[buildingID].rooms.append(room)
 
@@ -208,19 +221,19 @@ with open(sys.argv[2], "r") as constraints_file:
         elif processed_line[0] == "Teachers":
             num_of_teachers = int(processed_line[1])
             class_section = True
-        elif class_section = True
-            classID = processed_line[0]
+        elif class_section ==True:
+            classID = int(processed_line[0])
             dept = processed_line[2]
-            teacherPairID = processed_line[3]
-            credit_hours = processed_line[4]
-            day_frequency = processed_line[5]
+            teacherPairID = int(processed_line[3])
+            credit_hours = int(processed_line[4])
+            day_frequency = int(processed_line[5])
             if processed_line[1] == "B":    
                 college = brynmawr
             else:   
                 college = haverford    
             classObj = Class(classID,college,dept, popularity[classID], teacherPairID, day_frequency, credit_hours)
                 
-            classObj.building = dept_to_building[dept]
+            classObj.building = dept_to_buildings[dept]
             classes_read += 1
             building.classes.append(classObj)
      #       building.insert_by_popularity(classObj)
@@ -229,7 +242,6 @@ with open(sys.argv[2], "r") as constraints_file:
             
  
         line_number += 1
-
 
 
 
@@ -266,10 +278,12 @@ for a in class_teacher:
 
 
 def assign_rooms(Buildings):
-    for building in Buildings:
+    for building in Buildings:  
+        if building == "":
+            continue
         print("Building")
         sorted_classes = sorted(building.classes, key=lambda x:x.popularity, reverse = True)
-        sorted_rooms = sorted(building.rooms.items(), key=lambda item: item[1], reverse = True)
+        sorted_rooms = sorted(building.rooms, key=lambda x: x.capacity, reverse = True)
         num_classes = len(sorted_classes)
         num_rooms  = len(sorted_rooms)
 
@@ -290,7 +304,7 @@ def assign_rooms(Buildings):
             for i in range(num_rooms_max_classes):
                 for j in range(classes_per_room_max):
                     current_class = sorted_classes[0]
-                    current_class.room.append(sorted_rooms[i])
+                    current_class.room = sorted_rooms[i]
                     del sorted_classes[0]
 
             for i in range(num_rooms_max_classes):
@@ -299,10 +313,10 @@ def assign_rooms(Buildings):
             for i in range(num_rooms_min_classes):
                 for j in range(classes_per_room_min):
                     current_class = sorted_classes[0]
-                    current_class.room.append(sorted_rooms[i])
+                    current_class.room = sorted_rooms[i]
                     del sorted_classes[0]
 
-print(assign_rooms(all_buildings))
+print(all_buildings)
 
 
 
@@ -419,7 +433,6 @@ def output_schedule(objects_list):
 
 
 #MAIN, FUNCTION CALLS
-overlap_conflict, popularity = compute_overlap(pref_list)
 divide_into_slots(overlap_conflict, teacher_conflict)
 room_slots = divide_into_rooms(popularity)
 objects_list = create_class_objects(room_slots, pref_list, cID_IID)

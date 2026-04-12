@@ -38,6 +38,7 @@ BUILDING_TEMPLATES = (
     BuildingTemplate(3, "B", "Goodhart"),
     BuildingTemplate(4, "B", "Guild"),
     BuildingTemplate(5, "B", "Bettws"),
+
     BuildingTemplate(6, "H", "Stokes"),
     BuildingTemplate(7, "H", "Sharpless"),
     BuildingTemplate(8, "H", "Hilles"),
@@ -161,6 +162,17 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="Random seed, if you want the same output every time.",
     )
+    parser.add_argument(
+    "--student-pref",
+    help="Where to write student preference file.",
+    )
+    parser.add_argument(
+    "--students",
+    type=int,
+    default=None,
+    help="Number of students (default: 2 * num_classes).",
+    )
+
     return parser.parse_args()
 
 
@@ -358,10 +370,7 @@ def build_structured_constraints(
 
     lines = [
         f"Class Times\t{class_times}",
-        "",
         f"Buildings\t{len(BUILDING_TEMPLATES)}",
-        "",
-        "# buildingID\tcollege\tbuilding_name\tnum_rooms",
     ]
 
     for building, room_count in zip(BUILDING_TEMPLATES, room_counts):
@@ -371,10 +380,7 @@ def build_structured_constraints(
 
     lines.extend(
         [
-            "",
             f"Rooms\t{num_rooms}",
-            "",
-            "# roomID\tbuildingID\tcapacity",
         ]
     )
 
@@ -387,11 +393,8 @@ def build_structured_constraints(
 
     lines.extend(
         [
-            "",
             f"Classes\t{num_classes}",
             f"Teachers\t{num_classes // 2}",
-            "",
-            "# classID\tcollege\tdept\tpairedClassID\tcredit_hours\tday_frequency",
         ]
     )
 
@@ -445,6 +448,22 @@ def upgrade_existing_constraints(
 
     return output_lines
 
+def generate_student_preferences(num_students: int, num_classes: int, rng: random.Random) -> list[str]:
+    if num_students <= 0:
+        raise ValueError("Number of students must be positive.")
+    if num_classes < 4:
+        raise ValueError("Need at least 4 classes for preferences.")
+
+    lines = [f"Students\t{num_students}"]
+
+    class_pool = list(range(1, num_classes + 1))
+
+    for student_id in range(1, num_students + 1):
+        prefs = rng.sample(class_pool, 4)  # 4 unique classes
+        lines.append(f"{student_id}\t{prefs[0]}\t{prefs[1]}\t{prefs[2]}\t{prefs[3]}")
+
+    return lines
+
 
 def main() -> None:
     args = parse_args()
@@ -493,9 +512,21 @@ def main() -> None:
             rng=rng,
         )
 
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines) + "\n")
 
+    num_students = args.students if args.students is not None else args.classes * 2
+    student_lines = generate_student_preferences(
+        num_students=num_students,
+        num_classes=args.classes,
+        rng=rng,
+    )
+
+    if args.student_pref:
+        student_path = Path(args.student_pref)
+        student_path.parent.mkdir(parents=True, exist_ok=True)
+        student_path.write_text("\n".join(student_lines) + "\n")
 
 if __name__ == "__main__":
     main()

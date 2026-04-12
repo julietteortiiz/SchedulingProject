@@ -1,0 +1,71 @@
+Class Times 15
+
+Buildings 4
+# buildingID college building_name num_rooms
+1   B   Park        3
+2   B   Dalton      2
+3   H   Stokes      2
+4   H   Sharp       3
+
+Rooms 10
+# roomID buildingID capacity
+1   1   400
+2   1   650
+3   1   600
+4   2   850
+5   2   300
+6   3   320
+7   3   500
+8   4   250
+9   4   750
+10  4   550
+
+
+Classes 40
+Teachers    20
+
+# classID college dept pairedClassID credit_hours day_frequency
+
+1   B   CS          17  3   3
+2   H   History     29  3   2
+3   B   Biology     11  4   3
+4   H   Econ        22  3   2
+5   B   Physics     33  3   3
+6   H   Math        14  4   2
+7   B   English     25  3   2
+8   H   Chem        19  4   3
+9   B   Art         31  2   1
+10  H   Political   36  3   3
+
+11  B   Biology     3   4   2
+12  H   Music       28  2   1
+13  B   Sociology   21  3   2
+14  H   Math        6   4   3
+15  B   Philosophy  27  3   3
+16  H   Psychology  34  4   2
+17  B   CS          1   3   2
+18  H   Chem        24  4   3
+19  H   Chem        8   4   2
+20  B   Physics     37  3   2
+
+21  B   Sociology   13  3   3
+22  H   Econ        4   3   3
+23  B   CS          30  3   2
+24  H   Chem        18  4   2
+25  B   English     7   3   3
+26  H   History     35  3   2
+27  B   Philosophy  15  3   2
+28  H   Music       12  2   2
+29  H   History     2   3   3
+30  B   CS          23  3   3
+
+31  B   Art         9   2   2
+32  H   Psychology  38  4   3
+33  B   Physics     5   3   2
+34  H   Psychology  16  4   3
+35  H   History     26  3   3
+36  H   Political   10  3   2
+37  B   Physics     20  3   3
+38  H   Psychology  32  4   2
+39  B   Biology     40  4   3
+40  B   Biology     39  4   2

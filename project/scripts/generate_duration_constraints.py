@@ -49,14 +49,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--min-room-capacity",
         type=int,
-        default=200,
-        help="Smallest room size to generate. Default: 200.",
+        default=6,
+        help="Smallest room size to generate. Default: 6.",
     )
     parser.add_argument(
         "--max-room-capacity",
         type=int,
-        default=900,
-        help="Largest room size to generate. Default: 900.",
+        default=120,
+        help="Largest room size to generate. Default: 120.",
     )
     parser.add_argument(
         "--duration-blocks",

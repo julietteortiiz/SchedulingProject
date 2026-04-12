@@ -1,0 +1,95 @@
+Class Times	15
+Buildings	10
+1	B	Dalton	2
+2	B	Park	3
+3	B	Goodhart	4
+4	B	Guild	2
+5	B	Bettws	3
+6	H	Stokes	4
+7	H	Sharpless	3
+8	H	Hilles	2
+9	H	Chase	4
+10	H	Roberts	3
+Rooms	30
+1	1	11
+2	1	25
+3	2	59
+4	2	36
+5	2	48
+6	3	75
+7	3	37
+8	3	33
+9	3	26
+10	4	28
+11	4	102
+12	5	109
+13	5	87
+14	5	20
+15	6	15
+16	6	77
+17	6	99
+18	6	119
+19	7	86
+20	7	10
+21	7	92
+22	8	17
+23	8	60
+24	9	40
+25	9	89
+26	9	50
+27	9	96
+28	10	57
+29	10	14
+30	10	92
+Classes	50
+Teachers	25
+1	H	Political	16	2	2
+2	B	English	4	3	2
+3	H	Econ	9	4	2
+4	B	English	2	3	2
+5	B	Physics	18	3	3
+6	B	Physics	38	2	2
+7	H	Math	27	3	2
+8	H	Psychology	34	2	1
+9	H	Econ	3	4	2
+10	B	Physics	28	3	2
+11	B	Sociology	33	4	3
+12	B	Physics	22	4	2
+13	B	Sociology	30	2	1
+14	H	Psychology	36	2	2
+15	B	Art	31	2	1
+16	H	Political	1	2	1
+17	B	Sociology	47	3	2
+18	B	Physics	5	3	2
+19	H	Chem	37	4	2
+20	H	Math	23	3	2
+21	H	Music	25	4	2
+22	B	Physics	12	4	2
+23	H	Math	20	3	2
+24	H	Econ	45	3	3
+25	H	Music	21	4	2
+26	B	English	50	3	3
+27	H	Math	7	3	2
+28	B	Physics	10	3	3
+29	B	English	43	4	2
+30	B	Sociology	13	2	2
+31	B	Art	15	2	2
+32	B	Physics	35	2	2
+33	B	Sociology	11	4	2
+34	H	Psychology	8	2	2
+35	B	Physics	32	2	2
+36	H	Psychology	14	2	1
+37	H	Chem	19	4	2
+38	B	Physics	6	2	1
+39	H	History	40	4	3
+40	H	History	39	4	2
+41	H	Political	48	3	2
+42	H	Psychology	49	4	2
+43	B	English	29	4	3
+44	B	Physics	46	3	3
+45	H	Econ	24	3	3
+46	B	Physics	44	3	2
+47	B	Sociology	17	3	3
+48	H	Political	41	3	2
+49	H	Psychology	42	4	3
+50	B	English	26	3	3

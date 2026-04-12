@@ -273,10 +273,10 @@ def assign_rooms(Buildings):
                 del sorted_rooms[0]
 
             for a in range(num_rooms_min_classes):
-                for b in range(classes_per_room_min):
-                    current_class = sorted_classes[0]
-                    current_class.room = sorted_rooms[i]
-                    del sorted_classes[0]
+                    for b in range(classes_per_room_min):
+                        current_class = sorted_classes[0]
+                        current_class.room = sorted_rooms[i]
+                        del sorted_classes[0]
 
 
 def assign_times(overlap_conflict):
@@ -288,7 +288,7 @@ def assign_times(overlap_conflict):
 
         if first_class.isScheduled == False:
             time_slots = math.ceil((first_class.day_frequency / first_class.credit_hours) * 2)
-            days = [0,1,2,3,4]    
+            days = [0,1,2,3,4]
             day_combinations = combinations(days, time_slots)
             # assign where schedule is empty under these constraints
                 # day_frequency if fullfiled
@@ -296,12 +296,12 @@ def assign_times(overlap_conflict):
                 # it doesnt conflict with the time of class 2
             for selected_days in day_combinations:
                 for start_time in range(num_of_class_times - time_slots + 1):
-                        valid = True
+                    valid = True
                     for each_day in selected_days:
                         for offset in range(time_slots):
                             t = start_time + offset
                             # Room constraint
-                            if first_class.room.schedule[t][day] != -1: 
+                            if first_class.room.schedule[t][each_day] != -1: 
                                 valid = False
                                 break
                             # Teacher constraint
@@ -312,11 +312,16 @@ def assign_times(overlap_conflict):
                             if sec_class.time == time and sec_class.days == selected_days:
                                 valid = False
                                 break
+
+
+
                         if not valid:
                             break
 
-                    if valid:
-                        # assign class these days and time
+               # if valid:
+                # assign class these days and time
+
+
 '''                 
 
                 #then access selected days and time
@@ -341,9 +346,6 @@ def assign_times(overlap_conflict):
    '''     
 assign_rooms(all_buildings)
 assign_times(overlap_conflict)
-for i in all_classes:   
-    print(i)
-=======
 def assign_times(overlap_pairs):
     for pair in overlap_pairs:
         class1 = pair[0]
@@ -354,10 +356,28 @@ def assign_times(overlap_pairs):
 overlap_pairs = compute_overlap(pref_list)
 assign_rooms(building_objects)
 
-for c in class_objects:
-    print(c)
 
+def output_schedule(objects_list, stream=None):
+    if stream is None:
+        stream = sys.stdout
 
+    stream.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+
+    ordered_classes = sorted(objects_list, key=lambda clss: int(clss.ID))
+
+    for clss in ordered_classes:
+        student_text = " ".join(str(student) for student in clss.students)
+        row = "\t".join(
+            [
+                str(clss.ID),
+                str(clss.room),
+                str(clss.teacherID),
+                str(clss.time),
+                student_text,
+            ]
+        )
+        stream.write(row)
+        stream.write("\n")
 
 
 

@@ -15,11 +15,12 @@ class Building:
         self.ID = ID
         self.name = name
         self.rooms = [# room objects]
+        self.classes = []
         self.dept = ""
-        self.popularity = []            
+  #      self.popularity = []            
 
-    def insert_by_popularity(self, classObj):
-        self.popularity.append(classObj)
+   # def insert_by_popularity(self, classObj):
+    #    self.popularity.append(classObj)
 
 class Room:
     def __init__(self, ID, capacity):
@@ -151,7 +152,7 @@ with open(sys.argv[2], "r") as constraints_file:
     "Psychology": ["Sharp"]
 }
 
-    
+
     for line in constraints_file:
         processed_line = line.split()
         if processed_line[0] == "Class" and processed_line[1] == "Times":
@@ -173,11 +174,12 @@ with open(sys.argv[2], "r") as constraints_file:
                     building.depts = ["Psychology"]
                 case "Dalton":
                     building.depts = []
-            all_buildings[buildingID] = building
+            all_buildings.append(building)
             if processed_line[1] == "B":    
                 brynmawr.buildings.append(building)
             else:   
                 haverford.buildings.append(building)
+            
             buildings_read += 1
             if buildings_read == num_of_buildings:
                 buildings_section == False
@@ -220,7 +222,8 @@ with open(sys.argv[2], "r") as constraints_file:
                 
             classObj.building = dept_to_building[dept]
             classes_read += 1
-            building.insert_by_popularity(classObj)
+            building.classes.append(classObj)
+     #       building.insert_by_popularity(classObj)
             if classes_read == num_of_classes:  
                 classes_section = False
             
@@ -253,6 +256,63 @@ for a in class_teacher:
         if tchr1 == tchr2 and a[0] != b[0]:
             teacher_conflict[int(a[0])] = int(b[0])
             teacher_conflict[int(b[0])] = int(a[0])
+
+
+
+
+
+
+
+
+
+def assign_rooms(Buildings):
+    for building in Buildings:
+        print("Building")
+        sorted_classes = sorted(building.classes, key=lambda x:x.popularity, reverse = True)
+        sorted_rooms = sorted(building.rooms.items(), key=lambda item: item[1], reverse = True)
+        num_classes = len(sorted_classes)
+        num_rooms  = len(sorted_rooms)
+
+        #1. len(classes) >= len(rooms) -> each room gets assigned 0 or 1 class, prioritize assigning larger rooms
+        if num_classes == num_rooms or num_classes < num_rooms:
+            for i in range(num_classes):
+                current = sorted_classes[i]
+                current.room.append(sorted_rooms[i])
+
+        #2. len(classes) > len(rooms) -> each room gets assigned multiple classes, prioritize larger rooms
+        if num_classes > num_rooms:
+            classes_per_room_max = math.ceil(num_classes/num_rooms)
+            classes_per_room_min = math.floor(num_classes/num_rooms)
+            num_rooms_min_classes = (num_rooms * classes_per_room_max) - num_classes
+            num_rooms_max_classes = num_rooms - num_rooms_min_classes
+            #first loop: we know that num of rooms that will recieve the greater number of classes
+            # for each i room, assign j number of classes
+            for i in range(num_rooms_max_classes):
+                for j in range(classes_per_room_max):
+                    current_class = sorted_classes[0]
+                    current_class.room.append(sorted_rooms[i])
+                    del sorted_classes[0]
+
+            for i in range(num_rooms_max_classes):
+                del sorted_rooms[0]
+
+            for i in range(num_rooms_min_classes):
+                for j in range(classes_per_room_min):
+                    current_class = sorted_classes[0]
+                    current_class.room.append(sorted_rooms[i])
+                    del sorted_classes[0]
+
+print(assign_rooms(all_buildings))
+
+
+
+
+
+
+
+
+
+
 
 
 

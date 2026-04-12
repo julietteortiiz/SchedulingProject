@@ -191,7 +191,6 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
-    couldnt_enroll_count = 0
     for list in pref_list:
         studentID = int(list[0])
         times_enrolled = [0] * num_of_class_times

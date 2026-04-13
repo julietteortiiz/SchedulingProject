@@ -55,12 +55,13 @@ class Class:
         self.building = "" # decided by dept
         self.dept_popularity = -1 # set by ranking all classes within dept by popularity
         self.room = "" # given by dept popularity ranking, needs to just be id
-        self.days = "" # given by a room's time availability
-        self.time = "" # given by a room's time availability
+        self.days = [] # given by a room's time availability
+        self.time = [] # given by a room's time availability
+        self.isScheduled = False
         self.students = [] # students who want to take this class
 
     def __str__(self):
-        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room)
+        return f"CLASS: ID {self.ID} COLLEGE {self.college} POP {self.popularity} ROOM {self.room} TIME {self.time} DAYS {self.days}" 
 
 #GLOBALS
 brynmawr = College("Bryn Mawr")
@@ -94,7 +95,7 @@ def compute_overlap(pref_list):
     pop = {} #for compute overlap
 
     for student_list in pref_list:
-        for i in range(1, 5):
+        for i in range(1, 5):   
             current = int(student_list[i])
             if current in pop:
                 pop[current] += 1
@@ -273,88 +274,127 @@ def assign_rooms(Buildings):
                 del sorted_rooms[0]
 
             for a in range(num_rooms_min_classes):
-                    for b in range(classes_per_room_min):
-                        current_class = sorted_classes[0]
-                        current_class.room = sorted_rooms[i]
-                        del sorted_classes[0]
-
+                for b in range(classes_per_room_min):
+                    current_class = sorted_classes[0]
+                    current_class.room = sorted_rooms[i]
+                    del sorted_classes[0]
+print(f"Total overlap pairs: {len(overlap_conflict)}")
+print(f"Unique classes in pairs: {len(set(c for pair in overlap_conflict for c in pair))}")
+print(f"Total classes: {len(all_classes)}")
 
 def assign_times(overlap_conflict):
     for (class1, class2) in overlap_conflict:
         first_class = all_classes[class1]
         sec_class = all_classes[class2]
-        class1_assigned = False
-        class2_assigned = False
+        
 
-        if first_class.isScheduled == False:
-            time_slots = math.ceil((first_class.day_frequency / first_class.credit_hours) * 2)
+        for cls_obj, cls_id in [(first_class, class1), (sec_class, class2)]:
+            if cls_obj.isScheduled:
+                continue
+
+            time_slots = math.ceil((cls_obj.credit_hours / cls_obj.day_frequency) * 2)
             days = [0,1,2,3,4]
-            day_combinations = combinations(days, time_slots)
+            assigned = False
             # assign where schedule is empty under these constraints
                 # day_frequency if fullfiled
                 # it doesnt conflict with the time of the other teacher-shared class
                 # it doesnt conflict with the time of class 2
-            for selected_days in day_combinations:
+            for selected_days in combinations(days, time_slots):
                 for start_time in range(num_of_class_times - time_slots + 1):
                     valid = True
-                    for each_day in selected_days:
-                        for offset in range(time_slots):
-                            t = start_time + offset
+                    block = []
+                    for offset in range(time_slots):        
+                        t = start_time + offset
+                        for each_day in selected_days:
                             # Room constraint
-                            if first_class.room.schedule[t][each_day] != -1: 
+                            if cls_obj.room.schedule[t][each_day] != -1: 
                                 valid = False
                                 break
-                            # Teacher constraint
-                            if all_classes[first_class.teacherID].time == time and all_classes[first_class.teacherID].days == selected_days:
-                                valid = False
-                                break
-                            # Class constraint
-                            if sec_class.time == time and sec_class.days == selected_days:
-                                valid = False
-                                break
-
-
-
                         if not valid:
                             break
 
-               # if valid:
-                # assign class these days and time
-
-
-'''                 
-
-                #then access selected days and time
-                if result == True:
-                    if all_classes[first_class.teacherID].time == time and all_classes[first_class.teacherID].days == selected_days:
+                        for each_day in selected_days:
+                            block.append((t, each_day))
+                    if not valid:
                         continue
-                    else:
-                        worst_case_time = time
-                        worst_case_days = selected_days
-                    if sec_class.time == time and sec_class.days == selected_days:
+
+
+                    # Teacher constraint    
+                    teacher_id = cls_obj.teacherID
+                    for (t,d) in block:
+                        if all_classes[teacher_id].room.schedule[t][d] != -1:
+                            valid = False
+                            break
+
+                    if not valid:
                         continue
-                    else:
-                        first_class.isScheduled = True
-                        first_class.time = time
-                        first_class.days = selected_days
-                        break
-                       # repeat for class2 
-            
-            first_class_time = worst_case_time
-            first_class_days = worst_case_days
-            #maybe else assign another room
-   '''     
+
+                    # class constraint
+                    other = sec_class if cls_obj is first_class else first_class
+                    if other.isScheduled:
+                        for (t, d) in block:
+                            if other.room.schedule[t][d] != -1:
+                                valid = False
+                                break
+
+
+                    if not valid:
+                        continue
+                    for (t, d) in block: 
+                        cls_obj.room.schedule[t][d] = cls_obj
+                        if t not in cls_obj.time:
+                            cls_obj.time.append(t)
+                        if d not in cls_obj.days:
+                            cls_obj.days.append(d)  
+                    cls_obj.isScheduled = True
+                    assigned = True 
+                    print(cls_obj)
+                    break
+
+                if assigned:
+                    break
+
+
 assign_rooms(all_buildings)
-assign_times(overlap_conflict)
-def assign_times(overlap_pairs):
-    for pair in overlap_pairs:
-        class1 = pair[0]
-        class2 = pair[1]
-       
+
+print(type(overlap_conflict))
+print(len(overlap_conflict))
+def assign_times(overlap_conflict):
+    pair_count = 0
+    for (class1, class2) in overlap_conflict:
+        pair_count += 1
+        first_class = all_classes[class1]
+        sec_class = all_classes[class2]
+        print(f"Pair {pair_count}: ({class1}, {class2}) | first_scheduled={first_class.isScheduled} sec_scheduled={sec_class.isScheduled}")
+
+        for cls_obj, cls_id in [(first_class, class1), (sec_class, class2)]:
+            if cls_obj.isScheduled:
+                print(f"  Skipping {cls_id} — already scheduled")
+                continue
+
+            time_slots = max(1, math.ceil((cls_obj.credit_hours / cls_obj.day_frequency) * 2))
+            print(f"  Trying {cls_id}: time_slots={time_slots}, room={cls_obj.room}")
+            assigned = False
+
+            for selected_days in combinations([0,1,2,3,4], time_slots):
+                if assigned:
+                    break
+                for start_time in range(num_of_class_times - time_slots + 1):
+                    # ... your existing logic ...
+                    if not valid:
+                        continue
+                    # commit block
+                    assigned = True
+                    print(f"  ✅ Scheduled {cls_id} on days={selected_days} start={start_time}")
+                    break
+
+            if not assigned:
+                print(f"  ❌ FAILED to schedule {cls_id} — no valid slot found")assign_times(overlap_conflict)
+
 
 #MAIN
-overlap_pairs = compute_overlap(pref_list)
-assign_rooms(building_objects)
+#overlap_pairs = compute_overlap(pref_list)
+#assign_rooms(building_objects)
 
 
 def output_schedule(objects_list, stream=None):

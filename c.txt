@@ -92,8 +92,4 @@ Teachers	25
 47	B	Sociology	17	3	3
 48	H	Political	41	3	2
 49	H	Psychology	42	4	3
-<<<<<<< HEAD
 50	B	English	26	3	3
-=======
-50	B	English	26	3	3
->>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b

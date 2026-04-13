@@ -1,0 +1,105 @@
+Scheduling Experiment Summary
+
+This document summarizes what our scheduling experiments suggest about the current scheduler in juliette.py. In these experiments, "optimality" means the fraction of requested courses that students were successfully enrolled in. A score near 1.0 is better. These tests use the generated structured constraint files, so they tell us how the current heuristic behaves on our simulated data. They do not prove what the absolute best schedule would be.
+
+1. What do the results tell us?
+
+The results show that the scheduler is very sensitive to how much time and space it has.
+
+- Baseline performance was about 0.6575.
+- More rooms helped. With 20 rooms, optimality was 0.67. With 40 rooms, it rose to 0.695.
+- More available time slots also helped. With 12 class-time blocks, optimality dropped to 0.605. With 18 blocks, it rose to 0.685.
+- Tighter room capacities hurt performance. Capacity-tight scenarios scored 0.625.
+- Larger room capacities did not hurt and were slightly better than baseline at 0.66.
+- More students made the problem harder. With 150 students, optimality dropped to about 0.6183.
+- The distribution of course lengths mattered. Shorter and more moderate class lengths tended to do better than longer ones.
+
+The class-scale experiment also showed that the scheduler degrades as the number of classes grows very large.
+
+- 10 classes: 0.635
+- 100 classes: 0.7
+- 1000 classes: 0.525
+- 10000 classes: 0.4875
+
+This suggests the current greedy heuristic can still output a schedule at large scale, but the quality drops as congestion increases.
+
+2. What recommendations do we make to the registrar?
+
+Based on these experiments, the registrar should try to increase scheduling flexibility in the following ways:
+
+- Add more usable rooms when possible, especially for departments with many majors sharing the same building cluster.
+- Preserve more distinct time slots across the week instead of compressing too many courses into a small number of meeting windows.
+- Prefer larger-capacity rooms for high-demand courses, since capacity bottlenecks directly reduce student enrollment success.
+- Avoid too many long-duration classes competing for the same time windows unless there is enough room inventory to support them.
+- Watch high-density building clusters carefully. When many majors are tied to the same home building, conflicts rise quickly.
+
+In short, the registrar gets the best outcomes by increasing flexibility: more rooms, more time options, and enough larger rooms for popular courses.
+
+3. In each case, why was optimality this way?
+
+Baseline
+- Baseline landed around 0.6575 because the scheduler had a moderate amount of time and space, but still used a greedy assignment process that creates avoidable conflicts.
+
+Rooms = 20
+- This case scored 0.67. Even though there were fewer rooms, the one-room-per-building experiment setting still allowed the generator to create a valid instance, and this particular random instance was slightly easier than baseline.
+
+Rooms = 40
+- This case scored 0.695 because additional rooms reduced room conflicts and gave the scheduler more ways to place classes without blocking student preferences.
+
+Class times = 12
+- This case scored 0.605 because fewer time blocks force more courses to overlap, which causes more students to lose requested courses.
+
+Class times = 18
+- This case scored 0.685 because more time blocks spread classes out and reduce conflicts between popular courses.
+
+Students = 75
+- This case scored 0.66 because fewer students create less competition for seats and fewer overlapping demand patterns.
+
+Students = 150
+- This case scored 0.6183 because more students compete for the same rooms and times, so more requests go unfilled.
+
+Capacity tight
+- This case scored 0.625 because smaller room capacities prevent popular classes from taking all interested students, even when the classes are successfully scheduled.
+
+Capacity large
+- This case scored 0.66 because larger rooms reduce seat shortages, though timing conflicts still remain.
+
+Hours more short
+- This case scored 0.6925 because shorter classes use fewer time blocks and are easier to fit without conflict.
+
+Hours more long
+- This case scored 0.655 because longer classes consume more consecutive blocks and are harder to place without harming student access.
+
+Class scale = 10
+- This case scored 0.635. With very few classes, students have fewer total options, so there is less flexibility in satisfying all four requests.
+
+Class scale = 100
+- This case scored 0.7. This was the best of the scale tests because there were enough course options to satisfy demand, but still not so many that the system became too congested.
+
+Class scale = 1000
+- This case scored 0.525 because the scheduler had to handle far more conflicts while still using the same greedy logic and fixed number of time slots.
+
+Class scale = 10000
+- This case scored 0.4875 because congestion became extreme. The scheduler still produced a schedule, but many student requests could not be accommodated.
+
+4. How can we increase optimality?
+
+There are two main ways to improve optimality: change the scheduling environment, or improve the algorithm.
+
+Environment changes
+- Increase the number of rooms available.
+- Increase the number of class-time blocks.
+- Use larger rooms for popular courses.
+- Reduce the share of long multi-block classes when possible.
+- Spread heavy-demand majors across more buildings or more room resources if policy allows.
+
+Algorithm changes
+- Replace purely greedy placement with a search method that can backtrack when an early decision causes later conflicts.
+- Schedule the most constrained classes first, such as long classes, large classes, or classes in crowded building groups.
+- Use student-demand information more directly when assigning times, not only when assigning students afterward.
+- Revisit room assignments after time assignment instead of fixing rooms too early.
+- Add a local-improvement step after the first schedule is created, so the algorithm can swap times or rooms to improve enrollment.
+
+Overall conclusion
+
+The experiments suggest that the current scheduler is workable but not robust. It performs reasonably on moderate instances, but it loses quality when time, room capacity, or scale become tight. For a registrar, the most practical levers are more rooms, more time flexibility, and protecting capacity for high-demand classes. For a computer science improvement plan, the biggest opportunity is to replace the current greedy heuristic with a method that can reconsider earlier decisions.

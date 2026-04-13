@@ -10,6 +10,8 @@ from collections import OrderedDict
 # 4. I think some data structures can be rid of if we create the class objects sooner an just directly update 
 # certain values like teacher ID. 
 
+#input: time = x, room = y
+
 #DATA STRUCTURES AND GLOBAL VARIABLES
 class Class:
     def __init__(self, ID, teacherID, time, room):
@@ -33,7 +35,14 @@ num_of_teachers = 0
 num_of_students = 0
 room_sizes = []
 room_slots = {}
+<<<<<<< HEAD
 time_slots = {}
+=======
+rooms = 4 #get this from constraints
+room_sizes = [0, 84, 89, 18, 59] #how do we get this from the constraints
+
+
+>>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b
 
 #READ INPUTS
 if len(sys.argv) < 1:
@@ -79,8 +88,14 @@ with open(sys.argv[2], "r") as constraints_file:
 
 #FUNCTIONS
 
+#one option, just create a times slots[] with and index is times-1, reduces for loop, no real difference though
 #create time slots
+<<<<<<< HEAD
 for time in range (1, num_of_class_times+1):
+=======
+#optimization idea; array of arrays, guess no real differnce though
+for time in range (1, times+1):
+>>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b
     time_slots[time] = []
 
 #create room slots
@@ -191,7 +206,10 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             name = temp
             objects.append(name)
     sorted_objects = sorted(objects, key=lambda x: x.ID)
-    couldnt_enroll_count = 0
+<<<<<<< HEAD
+=======
+    enrolled_count = 0
+>>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b
     for list in pref_list:
         studentID = int(list[0])
         times_enrolled = [0] * num_of_class_times
@@ -204,13 +222,25 @@ def create_class_objects(room_slots, pref_list, cID_IID):
             if times_enrolled[class_Class.time-1] == 0 and len(class_Class.students) < class_Class.capacity:
                 times_enrolled[class_Class.time-1] = 1
                 class_Class.students.append(studentID)
-            else:
-                couldnt_enroll_count = couldnt_enroll_count + 1
+                enrolled_count = enrolled_count + 1
+            
+    # print("Enrolled")
+    # print(enrolled_count)
+
     
+<<<<<<< HEAD
     #This is line for checking optimality
     #print("Couldnt enroll " + str(couldnt_enroll_count))
     #opt = ((num_of_students * 4) - couldnt_enroll_count) / (num_of_students * 4)
     #print("Opt " + str(opt))
+=======
+    # for clss in sorted_objects:
+    #     pop = popularity.get(clss.ID)
+    #     enroll = len(clss.students)
+    #     opti = pop - enroll
+    #     print(clss.ID, pop, enroll, opti)
+            
+>>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b
     return sorted_objects
 
 #Write output to stdout, in makefile this will create our_schedule.txt        

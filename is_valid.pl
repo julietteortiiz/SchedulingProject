@@ -166,26 +166,44 @@ sub readConstraints {
 		if (/^Class Times\t(\d+)$/) {
 			$numslots = $1;
 		}
+		if (/^Buildings\t(\d+)$/) {
+			$isroom = 0;
+			$isclass = 0;
+			next;
+		}
 		if (/^Rooms\t(\d+)$/) {
 			$numrooms = $1;
 			$isroom = 1;
+			$isclass = 0;
 			next;
 		}
 		if (/^Classes\t(\d+)$/) {
 			$numclasses = $1;
 			$isroom = 0;
+			$isclass = 0;
+			next;
 		}
 		if (/^Teachers\t(\d+)$/) {
 			$numteachers = $1;
 			$isclass = 1;
+			$isroom = 0;
 			next;
 		}
 		if ($isroom) {
-			my ($roomnum, $size) = split(/\t/);
+			my @fields = split(/\t/);
+			my $roomnum = $fields[0];
+			my $size;
+			if ($#fields >= 2) {
+				$size = $fields[2];
+			} else {
+				$size = $fields[1];
+			}
 			$roomSize{$roomnum} = $size;
 		}
 		if ($isclass) {
-			my ($classnum, $classteach) = split(/\t/);
+			my @fields = split(/\t/);
+			my $classnum = $fields[0];
+			my $classteach = $fields[1];
 			$origCourseTeacher{$classnum} = $classteach;
 		}
 	}
@@ -207,7 +225,7 @@ sub readPrefs {
 
 		if (/^(\d+)\t(.*)$/) {
 			my $stu = $1;
-			my @prefs = split(/ /, $2);
+			my @prefs = split(/\s+/, $2);
 			$origStudentPrefs{$stu} = \@prefs;
 		}
 	}

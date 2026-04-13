@@ -7,5 +7,5 @@ algorithm: algorithm.py
 valid: is_valid.pl
 	perl is_valid.pl demo_constraints.txt demo_studentprefs.txt our_schedule.txt
 
-new: new_algorithm.py
-	python3 new_algorithm.py p.txt c.txt
+new: juliette.py
+	python3 juliette.py p.txt c.txt

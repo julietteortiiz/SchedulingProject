@@ -277,32 +277,28 @@ def assign_rooms(Buildings):
 rows, cols = num_of_class_times, 5
 time_matrix = [[set() for _ in range(cols)] for _ in range(rows)]
 
-#[j = 0, 1, 2, 3, 4]
-#[d = M, T, W, TH, F]
-# i = 0, time slot 1
-# i = 1, time slot 2
-
 def find_time(time_slots, teacher_conflict, room_conflict, class_conflict, j):
     valid_times = []
     for i in range(num_of_class_times - time_slots + 1):
+        # Check first slot
         if teacher_conflict in time_matrix[i][j] or \
             any(rc in time_matrix[i][j] for rc in room_conflict) or \
                 (class_conflict is not None and class_conflict in time_matrix[i][j]):
-                    continue
-        else:
-            start_time = i
-            end_time = 0
+            continue
         
-            for a in range(1, time_slots):
-                if teacher_conflict in time_matrix[i][j] or \
-                    any(rc in time_matrix[i][j] for rc in room_conflict) or \
-                        (class_conflict is not None and class_conflict in time_matrix[i][j]):
-                            break
-                else:
-                    end_time = a + i
-       
-            if ((end_time - start_time) + 1) == time_slots:
-                valid_times.append((start_time, end_time))
+        end_time = i 
+        valid = True
+        for a in range(1, time_slots):
+            if teacher_conflict in time_matrix[i + a][j] or \
+                any(rc in time_matrix[i + a][j] for rc in room_conflict) or \
+                    (class_conflict is not None and class_conflict in time_matrix[i + a][j]):
+                valid = False
+                break
+            else:
+                end_time = i + a
+
+        if valid and ((end_time - i) + 1) == time_slots:
+            valid_times.append((i, end_time))
                 
     return valid_times if valid_times else None
 
@@ -376,7 +372,7 @@ def one_per_week(class_object, time_slots_per_day, teacher_conflict, room_confli
 
 def get_time(class_object, time_slots, day_frequency, c_conflict):
     t_conflict = class_object.teacherID
-    r_conflict = class_object.room.classes
+    r_conflict = [c.ID for c in class_object.room.classes]
     
     if day_frequency == 5:
         return five_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)

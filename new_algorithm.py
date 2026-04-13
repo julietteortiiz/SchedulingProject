@@ -4,6 +4,7 @@ from collections import OrderedDict
 import math
 
 
+
 class College:
     def __init__(self, name):
         self.name = name
@@ -31,8 +32,9 @@ class Room:
         self.ID = ID
         self.capacity = capacity
         self.schedule =  [[]] # rows represent times and columns represent weekdays always 5 
+        self.classes = []
     def __str__(self):
-        return f"{self.ID} {self.capacity}"
+        return f" Room {self.ID}"
     def __repr__(self):
         return f"{self.ID} {self.capacity}"
 
@@ -60,12 +62,12 @@ class Class:
         self.students = [] # students who want to take this class
 
     def __str__(self):
-        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room)
+        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room) + " Days" + str(self.days) + " Times " + str(self.time)
 
 #GLOBALS
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
-class_objects = []
+class_objects = {}
 building_objects = {}
 room_objects = []
 
@@ -116,7 +118,7 @@ def compute_overlap(pref_list):
 
 overlap_conflict, popularity = compute_overlap(pref_list)
 room_sizes = []
-
+num_of_class_times = 0
 
 with open(sys.argv[2], "r") as constraints_file:
     line_number = 0 
@@ -224,7 +226,7 @@ with open(sys.argv[2], "r") as constraints_file:
             
             if classes_read == num_of_classes:  
                 classes_section = False
-            class_objects.append(classObj)
+            class_objects[classObj.ID] = classObj
             
  
     line_number += 1
@@ -259,7 +261,7 @@ def assign_rooms(Buildings):
                 for j in range(classes_per_room_max):
                     current_class = sorted_classes[0]
                     current_class.room = sorted_rooms[i]
-                    
+                    sorted_rooms[i].classes.append(current_class)
                     del sorted_classes[0]
 
             for _ in range(num_rooms_max_classes):
@@ -268,31 +270,189 @@ def assign_rooms(Buildings):
             for a in range(num_rooms_min_classes):
                 for b in range(classes_per_room_min):
                     current_class = sorted_classes[0]
-                    current_class.room = sorted_rooms[i]
+                    current_class.room = sorted_rooms[a]
+                    sorted_rooms[a].classes.append(current_class)
                     del sorted_classes[0]
 
+rows, cols = num_of_class_times, 5
+time_matrix = [[set() for _ in range(cols)] for _ in range(rows)]
 
+#[j = 0, 1, 2, 3, 4]
+#[d = M, T, W, TH, F]
+# i = 0, time slot 1
+# i = 1, time slot 2
+
+def find_time(time_slots, teacher_conflict, room_conflict, class_conflict, j):
+    valid_times = []
+    for i in range(num_of_class_times - time_slots + 1):
+        if teacher_conflict in time_matrix[i][j] or \
+            any(rc in time_matrix[i][j] for rc in room_conflict) or \
+                (class_conflict is not None and class_conflict in time_matrix[i][j]):
+                    continue
+        else:
+            start_time = i
+            end_time = 0
+        
+            for a in range(1, time_slots):
+                if teacher_conflict in time_matrix[i][j] or \
+                    any(rc in time_matrix[i][j] for rc in room_conflict) or \
+                        (class_conflict is not None and class_conflict in time_matrix[i][j]):
+                            break
+                else:
+                    end_time = a + i
+       
+            if ((end_time - start_time) + 1) == time_slots:
+                valid_times.append((start_time, end_time))
+                
+    return valid_times if valid_times else None
+
+def check_time(start_time, end_time, time_slots, j_range, t_conflict, r_conflict, c_conflict):
+    for day in j_range:
+        for k in range(time_slots):
+           if t_conflict in time_matrix[start_time + k][day] or \
+               any(rc in time_matrix[start_time + k][day] for rc in r_conflict) or \
+                   (c_conflict is not None and c_conflict in time_matrix[start_time + k][day]):
+                       return False
+    return True
+                    
+def five_per_week(class_object, time_slots_per_day, teacher_conflict, room_conflict, class_conflict):
+    a = [0, 1, 2, 3, 4] #M, T, W, TH, F
+    #Returns a list of valid times found on Monday
+    times = find_time(time_slots_per_day, teacher_conflict, room_conflict, class_conflict, 0)  
+    if times == None:
+        return None 
+    #Checks each time across all other days until valid time accross all days is found   
+    for time in times:
+        if check_time(time[0], time[1], time_slots_per_day, a[1:], class_conflict) == True:
+            return time, a 
+    #Returns no time if there is no valid time
+    return None         
+                     
+def three_per_week(class_object, time_slots_per_day, teacher_conflict, room_conflict, class_conflict):
+    a = [[0, 2, 4], [1, 3, 4]] 
+    for combo in a:
+        j = combo[0]
+        times = find_time(time_slots_per_day, teacher_conflict, room_conflict, class_conflict, j)  
+        if times == None:
+            return None 
+        for time in times:
+            if check_time(time[0], time[1], time_slots_per_day, combo[1:], teacher_conflict, room_conflict, class_conflict) == True:
+                return time, combo       
+    return None   
+
+def two_per_week(class_object, time_slots_per_day, teacher_conflict, room_conflict, class_conflict):
+    a = [[0, 2], [1, 3], [2, 4], [1, 4], [0, 3]]
+    for combo in a:
+        j = combo[0]
+        times = find_time(time_slots_per_day, teacher_conflict, room_conflict, class_conflict, j)  
+        if times == None:
+            return None 
+        for time in times:
+            if check_time(time[0], time[1], time_slots_per_day, combo[1:], teacher_conflict, room_conflict, class_conflict) == True:
+                return time, combo        
+    return None  
+
+def four_per_week(class_object, time_slots_per_day, teacher_conflict, room_conflict, class_conflict):
+    a = [0, 1, 3, 4]
+    times = find_time(time_slots_per_day, teacher_conflict, room_conflict, class_conflict, 0)  
+    if times == None:
+        return None 
+    for time in times:
+        if check_time(time[0], time[1], time_slots_per_day, a[1:], teacher_conflict, room_conflict, class_conflict) == True:
+            return time, a       
+    return None
+
+def one_per_week(class_object, time_slots_per_day, teacher_conflict, room_conflict, class_conflict):
+    a = [[0], [1], [2], [3], [4]]
+    for combo in a:
+        j = combo[0]
+        times = find_time(time_slots_per_day, teacher_conflict, room_conflict, class_conflict, j)  
+        if times == None:
+            return None 
+        for time in times:
+            if check_time(time[0], time[1], time_slots_per_day, combo[1:], teacher_conflict, room_conflict, class_conflict) == True:
+                return time, combo        
+    return None
+
+def get_time(class_object, time_slots, day_frequency, c_conflict):
+    t_conflict = class_object.teacherID
+    r_conflict = class_object.room.classes
+    
+    if day_frequency == 5:
+        return five_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)
+    if day_frequency == 4:
+        return four_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)
+    if day_frequency == 3:
+        return three_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)
+    if day_frequency == 2:
+        return two_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)
+    if day_frequency == 1:
+        return one_per_week(class_object, time_slots, t_conflict, r_conflict, c_conflict)
+
+def update_matrix(class_object, time, days):
+    for day in days:
+        for i in range(time[0], time[1]+1):
+            time_matrix[i][day].add(class_object.ID)
+    
 def assign_times(overlap_pairs):
     for pair in overlap_pairs:
-        class1 = pair[0]
-        class2 = pair[1]
-       
+        class1 = class_objects[pair[0]]
+        class2 = class_objects[pair[1]]
+        if class1.time == "" and class2.time == "":
+            c1_time_slots = max(1, math.ceil((class1.credit_hours / class1.day_frequency) * 2))
+            c1_time, c1_days = get_time(class1, c1_time_slots, class1.day_frequency, None)
+            class1.time = c1_time
+            class1.days = c1_days
+            update_matrix(class1, c1_time, c1_days)
+            
+            c2_time_slots = max(1, math.ceil((class2.credit_hours / class2.day_frequency) * 2)) 
+            c2_time, c2_days = get_time(class2, c2_time_slots, class2.day_frequency, c1_time)
+            class2.time = c2_time
+            class2.days = c2_days
+            update_matrix(class2, c2_time, c2_days)
+            
+        if class1.time == "" and class2.time != "":
+            c1_time_slots = max(1, math.ceil((class1.credit_hours / class1.day_frequency) * 2))
+            c1_time, c1_days = get_time(class1, c1_time_slots, class1.day_frequency, class2.time)
+            class1.time = c1_time
+            class1.days = c1_days 
+            update_matrix(class1, c1_time, c1_days)
+             
+        if class1.time != "" and class2.time == "":
+            c2_time_slots = max(1, math.ceil((class2.credit_hours / class2.day_frequency) * 2)) 
+            c2_time, c2_days = get_time(class2, c2_time_slots, class2.day_frequency, class1.time)
+            class2.time = c2_time
+            class2.days = c2_days
+            update_matrix(class2, c2_time, c2_days)
 
+#Write output to stdout, in makefile this will create our_schedule.txt        
+def output_schedule(objects_list, stream=None):
+    if stream is None:
+        stream = sys.stdout
+
+    stream.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+
+    ordered_classes = sorted(objects_list, key=lambda clss: int(clss.ID))
+
+    for clss in ordered_classes:
+        student_text = " ".join(str(student) for student in clss.students)
+        row = "\t".join(
+            [
+                str(clss.ID),
+                str(clss.room),
+                str(clss.teacherID),
+                str(clss.time),
+                student_text,
+            ]
+        )
+        stream.write(row)
+        stream.write("\n")
+        
 #MAIN
-overlap_pairs = compute_overlap(pref_list)
 assign_rooms(building_objects)
+assign_times(overlap_conflict)
 
-for c in class_objects:
+
+
+for id, c in class_objects.items():
     print(c)
-
-
-
-
-
-
-
-
-
-
-
-

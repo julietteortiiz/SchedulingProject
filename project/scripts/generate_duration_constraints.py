@@ -30,25 +30,76 @@ class ClassRecord:
     day_frequency: int
 
 
-# Representative academic/student-use buildings based on official Bryn Mawr
-# and Haverford campus/facilities pages.
+# Representative academic major/home buildings using compact tokens so the
+# existing scheduler parser can read them as single fields.
 BUILDING_TEMPLATES = (
-    BuildingTemplate(1, "B", "Dalton"),
-    BuildingTemplate(2, "B", "Park"),
-    BuildingTemplate(3, "B", "Goodhart"),
-    BuildingTemplate(4, "B", "Guild"),
-    BuildingTemplate(5, "B", "Bettws"),
+    BuildingTemplate(1, "B", "Park"),
+    BuildingTemplate(2, "B", "Bettws"),
+    BuildingTemplate(3, "B", "OldLib"),
+    BuildingTemplate(4, "B", "Dalton"),
+    BuildingTemplate(5, "B", "Carpenter"),
+    BuildingTemplate(6, "B", "EngHouse"),
+    BuildingTemplate(7, "B", "Goodhart"),
 
-    BuildingTemplate(6, "H", "Stokes"),
-    BuildingTemplate(7, "H", "Sharpless"),
-    BuildingTemplate(8, "H", "Hilles"),
-    BuildingTemplate(9, "H", "Chase"),
-    BuildingTemplate(10, "H", "Roberts"),
+    BuildingTemplate(8, "H", "Sharpless"),
+    BuildingTemplate(9, "H", "KINSC"),
+    BuildingTemplate(10, "H", "Hilles"),
+    BuildingTemplate(11, "H", "Chase"),
+    BuildingTemplate(12, "H", "Hall"),
+    BuildingTemplate(13, "H", "Roberts"),
+    BuildingTemplate(14, "H", "Woodside"),
+    BuildingTemplate(15, "H", "Union"),
 )
 
 DEPARTMENTS_BY_COLLEGE = {
-    "B": ("CS", "Biology", "Physics", "English", "Art", "Sociology", "Philosophy"),
-    "H": ("History", "Econ", "Math", "Chem", "Political", "Music", "Psychology"),
+    "B": (
+        "BMCBio",
+        "BMCChem",
+        "BMCGeo",
+        "BMCMath",
+        "BMCPhys",
+        "BMCPsych",
+        "BMCEduc",
+        "BMCCS",
+        "BMCHist",
+        "BMCPhil",
+        "BMCCities",
+        "BMCSoc",
+        "BMCAnth",
+        "BMCPoli",
+        "BMCEcon",
+        "BMCClass",
+        "BMCArch",
+        "BMCArtHist",
+        "BMCEng",
+        "BMCRus",
+        "BMCMusic",
+        "BMCTheater",
+        "BMCArts",
+    ),
+    "H": (
+        "HCBio",
+        "HCPsych",
+        "HCChem",
+        "HCPhys",
+        "HCAstro",
+        "HCMath",
+        "HCCS",
+        "HCEcon",
+        "HCLing",
+        "HCHist",
+        "HCPoli",
+        "HCSpanish",
+        "HCCompLit",
+        "HCEng",
+        "HCMusic",
+        "HCAnth",
+        "HCSoc",
+        "HCRel",
+        "HCAfr",
+        "HCGender",
+        "HCHealth",
+    ),
 }
 
 COLLEGE_ORDER = tuple(DEPARTMENTS_BY_COLLEGE)
@@ -399,10 +450,11 @@ def build_structured_constraints(
     )
 
     for record in class_records:
-        lines.append(
-            f"{record.class_id}\t{record.college}\t{record.department}\t"
-            f"{record.paired_class_id}\t{record.credit_hours}\t{record.day_frequency}"
+        line = (
+            f"{record.class_id}\t{record.paired_class_id}\t{record.college}\t"
+            f"{record.department}\t{record.credit_hours}\t{record.day_frequency}"
         )
+        lines.append(line)
 
     return lines
 

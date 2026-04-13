@@ -1,0 +1,60 @@
+Class Times	15
+Buildings	15
+1	B	Park	2
+2	B	Bettws	2
+3	B	OldLib	2
+4	B	Dalton	2
+5	B	Carpenter	2
+6	B	EngHouse	2
+7	B	Goodhart	2
+8	H	Sharpless	2
+9	H	KINSC	2
+10	H	Hilles	2
+11	H	Chase	2
+12	H	Hall	2
+13	H	Roberts	2
+14	H	Woodside	2
+15	H	Union	2
+Rooms	30
+1	1	83
+2	1	56
+3	2	24
+4	2	105
+5	3	114
+6	3	78
+7	4	26
+8	4	30
+9	5	27
+10	5	113
+11	6	9
+12	6	91
+13	7	36
+14	7	63
+15	8	108
+16	8	87
+17	9	55
+18	9	22
+19	10	85
+20	10	76
+21	11	102
+22	11	12
+23	12	83
+24	12	37
+25	13	97
+26	13	85
+27	14	105
+28	14	70
+29	15	97
+30	15	43
+Classes	10
+Teachers	5
+1	5	H	HCHealth	4	2
+2	4	B	BMCSoc	3	2
+3	8	B	BMCPsych	4	2
+4	2	B	BMCSoc	3	3
+5	1	H	HCHealth	4	2
+6	10	B	BMCEduc	4	2
+7	9	H	HCMusic	3	3
+8	3	B	BMCPsych	4	3
+9	7	H	HCMusic	3	3
+10	6	B	BMCEduc	4	3

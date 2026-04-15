@@ -72,6 +72,7 @@ def get_building(list_of_dicts):
     if subject in building:
         building[subject].append(room)
     else:
+        print(subject)
         building[subject] = [room]
   return building
 

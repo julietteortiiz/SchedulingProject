@@ -1,92 +1,120 @@
+# IMPORTS
 import sys
 from collections import OrderedDict
+import math
 
 
-with open(sys.argv[1], 'r') as f:
-        lines = f.readlines()
 
-pref_list = []
-for line in lines[1:]:
-    parts = line.strip().split()
-    if len(parts) >= 2:
-        numbers = [int(x) for x in parts[1:]]
-        pref_list.append(numbers)
+class College:
+    def __init__(self, name):
+        self.name = name
+        self.buildings = {}# building objects : list of departments}
+    def __str__(self):
+        return self.name + " " + self.buildings
+    
+class Building:
+    def __init__(self, ID, name, rooms):
+        self.ID = ID
+        self.name = name
+        self.rooms = []# room objects]
+        self.depts = []
+        self.classes = []  
+          
+    def __str__(self):
+        return f"{self.ID} {self.name} {self.rooms}" 
+    def __repr__(self):
+        return f"{self.ID} {self.name} {self.rooms}"
+    def insert_by_popularity(self, classObj):
+        self.popularity.append(classObj)
 
+class Room:
+    def __init__(self, ID, capacity):
+        self.ID = ID
+        self.capacity = capacity
+        self.schedule =  [[]] # rows represent times and columns represent weekdays always 5 
+        self.classes = []
+    def __str__(self):
+        return f" Room {self.ID}"
+    def __repr__(self):
+        return f"{self.ID} {self.capacity}"
 
 class Class:
-    def __init__(self, ID, teacherID, pref_count, room, room_size, overlap):
-        self.ID = ID
-        self.teacherID = teacherID
-        self.pref_count = pref_count
-        self.room =  room
-        self.room_size = room_size
+    def __init__(self, ID, college, dept, popularity, teacherID, day_frequency, credit_hours):
+
+        # input data
+        self.ID = ID # assigned at creation
+        self.college = college # given by constraint file
+        self.dept = dept
+        self.popularity = popularity # calculated from student pref
+        self.teacherID = teacherID # given by constraint file
+        self.day_frequency = day_frequency # given by constraint file
+        self.credit_hours =  credit_hours # given by constraint file
+
+        #################
+
+        # assigned data
+
+        self.building = "" # decided by dept
+        self.dept_popularity = -1 # set by ranking all classes within dept by popularity
+        self.room = "" # given by dept popularity ranking, needs to just be id
+        self.days = "" # given by a room's time availability
+        self.time = "" # given by a room's time availability
+        self.students = [] # students who want to take this class
+
+    def __str__(self):
+        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room) + " Days" + str(self.days) + " Times " + str(self.time)
+
+#GLOBALS
+brynmawr = College("Bryn Mawr")
+haverford = College("Haverford")
+class_objects = {}
+building_objects = {}
+room_objects = []
 
 
-#over is a dictionary
-# key = (current,next)
+
+#READ INPUTS
+if len(sys.argv) < 1:
+    print("Usage: algorithm.py <pref_list> <constraints> ")
+    exit
+
+pref_list = []
+with open(sys.argv[1], 'r') as pref_unclean:
+    i = -1
+    for line in pref_unclean:
+        processed_line = line.split()
+        if i == -1:
+            i += 1  
+            num_of_students = int(processed_line[1])
+            continue
+        pref_list.append(processed_line)
+        i += 1
+
+#create the overlap dictionary and the list of classes based off popularity
 def compute_overlap(pref_list):
     over = {}
+    pop = {} #for compute overlap
+
     for student_list in pref_list:
-        for i in range(2):
-            current = student_list[i]
-            for j in range(i+1, 3):
-                second = student_list[j]
-                if second < current:
-                    temp = current
-                    current = second
-                    second = temp
-                if (current,second) in over:
-                    a = over[(current,second)]
-                    over[(current,second)] = a + 1
+        for i in range(1, 5):
+            current = int(student_list[i])
+            if current in pop:
+                pop[current] += 1
+            else:
+                pop[current] = 1
+            for j in range(i+1, 5):
+                nxt = int(student_list[j])
+                pair = (min(current, nxt), max(current, nxt))
+
+
+                if pair in over:
+                    over[pair] = over[pair] + 1
                 else:
                     over[(current,second)] = 1
 
-    overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1], reverse = True))   
-    return overlap
-
-Times = [1, 2, 3, 4]
-Rooms = [1, 2, 3, 4]
-Teachers = {1:5, 2:2, 3:6, 4:6, 5:3, 6: 2, 7:7, 8:4, 9:4, 10:3, 11:5, 12:1, 13:1, 14:7}
-
-def schedule(overlap):
-    SC = [0] * 14
-    scheduledClasses = {}
-    for time in Times:
-        scheduledClasses[time] = (0,0,0,0)
-    print(scheduledClasses)
-    for pair in overlap:
-        classA = pair[0]
-        classB = pair[1]
-        ScheduledA = SC[classA - 1]
-        ScheduledB = SC[classB - 1] 
-        if ScheduledA == 0 and ScheduledB == 0:
-            continue
+    overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1]))   
+    print(overlap)
 
 
-            
-#when scheduling need to first check that there's an avilable time slot
-#that doesn't induce 
-def findSlot(classID, overlapTime, conflictTime, scheduledClasses):
-    check = []
-    for i in range(1,14):
-        if i != overlapTime or i != conflictTime:
-            check.append(i)
-    for time in check:
-        if NULL in scheduledClasses[time]:
-            print("Found Slot!")
-            return time
-    
-
-
-
-
-
-
-             
-
-
-
-#MAIN
-overlap = compute_overlap(pref_list) 
-schedule(overlap)
+compute_overlap(pref_list) 
 

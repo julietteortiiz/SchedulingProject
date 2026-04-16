@@ -10,6 +10,9 @@ def build_course_ids(list_of_dicts):
     for d in list_of_dicts:
         course = d["Course ID"]
 
+        course = course.rstrip()
+    
+
         if course and course not in course_id_map:
             course_id_map[course] = counter
             counter += 1
@@ -37,6 +40,8 @@ def build_student_ids(list_of_dicts):
 
     for d in list_of_dicts:
         student = d.get("Student ID")
+
+        student = student.rstrip()
 
         if student and student not in student_id_map:
             student_id_map[student] = counter
@@ -98,10 +103,10 @@ def get_student_prefs_enrolled(list_of_dicts):
   student_prefs = {}
   for dict in list_of_dicts:
     student = dict["Student ID"]
-    course = dict["Course ID"]
+    course = dict["Course ID"].rstrip()
     status = dict["Status"]
     room = dict["Facil ID 1"]
-    if status == "E" and room != "":
+    if status == "E":
       if student in student_prefs:
         student_prefs[student].append(course_map[course])
       else:
@@ -223,7 +228,7 @@ def get_courses(list_of_dicts):
     
     subject = subject_map.get(subject_unclean, subject_unclean)
 
-    if not course_id in courses and room !="" and prof_id != '#Value!':
+    if course_id not in courses and prof_id != '#Value!':
         courses[course_id] = {
             "course_id": course_id,
             "teacher_id": prof_id,
@@ -233,8 +238,6 @@ def get_courses(list_of_dicts):
             "day_freq": day_freq
 
         }
-    else:
-        continue
   return courses
 
 def get_building(list_of_dicts):
@@ -309,7 +312,7 @@ def get_building(list_of_dicts):
             rooms[room] = {
                 "id": room_id,
                 "building_id": buildings[building]["id"],
-                "capacity": room_capacities[room]
+                "capacity": room_capacities.get(room, 0)
             }
             room_id +=1
 
@@ -433,8 +436,11 @@ def write_constraints_to_file(list_of_dicts, filename):
   write_num_classes_to_file(list_of_dicts, f)
   write_teachers_to_file(list_of_dicts, f)
   f.close()
+
+
+
 if len(sys.argv) != 5:
-  print ("Usage: " + sys.argv[0] + " <enrollment.csv> <student_prefs.txt> <constraints.txt>")
+  print ("Usage: " + sys.argv[0] + " <bryn_mawr.csv> <haverford.csv> <student_prefs.txt> <constraints.txt>")
   exit(1)
 list_of_dicts, list_of_dicts_h = get_data_list_of_dicts(sys.argv[1], sys.argv[2])
 all_dicts = list_of_dicts + list_of_dicts_h
@@ -445,3 +451,6 @@ student_map = build_student_ids(all_dicts)
 room_capacities = get_room_sizes(all_dicts)
 write_prefs_to_file(all_dicts, sys.argv[3])
 write_constraints_to_file(all_dicts, sys.argv[4])
+
+
+

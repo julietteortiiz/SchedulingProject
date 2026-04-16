@@ -70,9 +70,6 @@ Hours more short
 Hours more long
 - This case scored 0.655 because longer classes consume more consecutive blocks and are harder to place without harming student access.
 
-Class scale = 10
-- This case scored 0.635. With very few classes, students have fewer total options, so there is less flexibility in satisfying all four requests.
-
 Class scale = 100
 - This case scored 0.7. This was the best of the scale tests because there were enough course options to satisfy demand, but still not so many that the system became too congested.
 

@@ -548,7 +548,7 @@ def assign_students(pref_list):
     #This is line for checking optimality
     print("Couldnt enroll " + str(couldnt_enroll_count))
     opt = ((num_of_students * 4) - couldnt_enroll_count) / (num_of_students * 4)
-    print("Opt " + str(opt))
+    print("Fit percentage: " + str(opt))
     return sorted_objects
         
 #MAIN

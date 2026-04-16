@@ -17,7 +17,7 @@ def get_room_sizes(list_of_dicts):
     room = dict["Facil ID 1"]
     status = dict["Status"]
     course = dict["Course ID"]
-    campus = dict["College"]
+    campus = dict["Catalog"]
     if status == "E" and campus == "H" and not room == "":
       if room in room_sizes_dict:
         if course in room_sizes_dict[room]:
@@ -27,9 +27,10 @@ def get_room_sizes(list_of_dicts):
       else:
         room_sizes_dict[room] = {}
         room_sizes_dict[room][course] = 1
-
+    
   room_capacities = {}
   for room in room_sizes_dict:
+    print(room)
     capacity = 0
     for course in room_sizes_dict[room]:
       if room_sizes_dict[room][course] > capacity:
@@ -40,9 +41,10 @@ def get_room_sizes(list_of_dicts):
 def get_student_prefs_enrolled(list_of_dicts):
   student_prefs = {}
   for dict in list_of_dicts:
-    student = dict["Student"]
+    student = dict["Student ID"]
     course = dict["Course ID"]
     status = dict["Status"]
+    subject = dict["Subject"]
     if status == "E":
       if student in student_prefs:
         student_prefs[student].append(course)
@@ -52,11 +54,16 @@ def get_student_prefs_enrolled(list_of_dicts):
 
 def get_courses(list_of_dicts):
   courses = {}
+  subjects = []
   for dict in list_of_dicts: 
     course = dict["Course ID"]
-    campus = dict["College"]
+    campus = dict["Catalog"]
+    subject = dict["Subject"]
     if not course in courses and campus == "H":
       courses[course] = dict
+    if subject not in subjects:
+      subjects.append(subject)
+      print(subject)
   return courses
 
 def get_prof_courses(list_of_dicts):
@@ -64,7 +71,7 @@ def get_prof_courses(list_of_dicts):
   for dict in list_of_dicts:
     prof = dict["Instructor ID"]
     course = dict["Course ID"]
-    campus = dict["College"]
+    campus = dict["Catalog"]
     if not prof == "" and campus == "H":
       if prof in profs:
         if not course in profs[prof]:
@@ -80,7 +87,7 @@ def get_class_times(list_of_dicts):
     end = dict["End 1 AMPM"]
     days = dict["Days 1"]
     class_time = (start, end, days)
-    campus = dict["College"]
+    campus = dict["Catalog"]
     if not class_time in times and campus == "H" and not start == "" \
         and not end == "" and not days == "":
       times.append(class_time)
@@ -168,7 +175,7 @@ def write_constraints_to_file(list_of_dicts, filename):
   f.close()
 
 if len(sys.argv) != 4:
-  print "Usage: " + sys.argv[0] + " <enrollment.csv> <student_prefs.txt> <constraints.txt>"
+  print( "Usage: " + sys.argv[0] + " <enrollment.csv> <student_prefs.txt> <constraints.txt>")
   exit(1) 
 list_of_dicts = get_data_list_of_dicts(sys.argv[1])
 write_prefs_to_file(list_of_dicts, sys.argv[2])

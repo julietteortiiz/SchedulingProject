@@ -119,6 +119,7 @@ def process_students_prefs(pref_filename, course_data):
                 
             if len(interested) > preferences_cap:
                 preferences_cap = len(interested)
+
     return students_preferences, students_data, preferences_cap     
 
 
@@ -144,6 +145,7 @@ def main():
     students_prefs, student_data, preference_cap = \
         process_students_prefs(prefs_file, 
         course_data)
+
     output_constraints_filename =  output_constraints_file
     output_prefs_filename = output_prefs_file
     

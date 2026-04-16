@@ -1,11 +1,11 @@
 juliette: juliette.py
 	python3 juliette.py demo_studentprefs.txt 
 
-algorithm: algorithm.py
-	python3 algorithm.py demo_studentprefs.txt demo_constraints.txt > our_schedule.txt
+final: greedy_algorithm.py
+	python3 greedy_algorithm.py demo_studentprefs.txt demo_constraints.txt > test_schedule.txt
 
 valid: is_valid.pl
-	perl is_valid.pl demo_constraints.txt demo_studentprefs.txt our_schedule.txt
+	perl is_valid.pl demo_constraints.txt demo_studentprefs.txt test_schedule.txt
 
 10000schedule:
 	python3 algorithm.py p_10000.txt c_10000.txt > our_schedule100000.txt

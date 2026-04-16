@@ -18,7 +18,7 @@ def get_room_sizes(list_of_dicts):
     status = dict["Status"]
     course = dict["Course ID"]
     campus = dict["Catalog"][0]
-    if status == "E" and campus == "B" and not room == "":
+    if status == "E" and not room == "":
       if room in room_sizes_dict:
         if course in room_sizes_dict[room]:
           room_sizes_dict[room][course] = room_sizes_dict[room][course] + 1
@@ -58,7 +58,7 @@ def get_courses(list_of_dicts):
     prof = dict["Instructor ID"]
     campus = dict["Catalog"][0]
     room = dict["Facil ID 1"]
-    if not course in courses and campus == "B" and room !="" and prof != '#Value!':
+    if not course in courses and room !="" and prof != '#Value!':
       courses[course] = dict
   return courses
 
@@ -84,7 +84,7 @@ def get_subject_level(list_of_dicts):
         department = dict["Subject"]
         campus = dict["Catalog"][0]
         level = dict["Catalog"][1]
-        if not course in subject_level and campus == "B":
+        if not course in subject_level:
             subject_level[course] = (department,level)
     return subject_level
 
@@ -94,7 +94,7 @@ def get_prof_courses(list_of_dicts):
     prof = dict["Instructor ID"]
     course = dict["Course ID"]
     campus = dict["Catalog"][0]
-    if not prof == "" and campus == "B" and prof != "#Value!":
+    if not prof == "" and prof != "#Value!":
       if prof in profs:
         if not course in profs[prof]:
           profs[prof].append(course)

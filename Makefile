@@ -2,7 +2,7 @@ juliette: juliette.py
 	python3 juliette.py demo_studentprefs.txt 
 
 final: greedy_algorithm.py
-	python3 greedy_algorithm.py demo_studentprefs.txt demo_constraints.txt > test_schedule.txt
+	python3 greedy_algorithm.py p.txt c.txt > test_schedule.txt
 
 valid: is_valid.pl
 	perl is_valid.pl demo_constraints.txt demo_studentprefs.txt test_schedule.txt

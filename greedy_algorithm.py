@@ -34,7 +34,7 @@ class Room:
         self.schedule =  [[]] # rows represent times and columns represent weekdays always 5 
         self.classes = []
     def __str__(self):
-        return f" Room {self.ID}"
+        return f"{self.ID}"
     def __repr__(self):
         return f"{self.ID} {self.capacity}"
 
@@ -62,14 +62,26 @@ class Class:
         self.students = [] # students who want to take this class
 
     def __str__(self):
-        return str(self.ID) + " " + self.dept + " " + str(self.building) + str(self.room) + " Days" + str(self.days) + " Times " + str(self.time)
+        return str(self.ID) + " " + self.dept + " " + str(self.building) + "room" + str(self.room) + " Days" + str(self.days) + " Times " + str(self.time)
 
+class Teacher:
+    def __init__(self, ID):
+        self.ID = ID
+        self.classes = []
+
+class Student:
+    def __init__(self, ID):
+        self.ID = ID
+        self.schedule = ""
+        
 #GLOBALS
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
 class_objects = {}
 building_objects = {}
-room_objects = []
+room_objects = {}
+teacher_objects = {}
+student_objects = {}
 room_sizes = []
 pref_list = []
 num_of_class_times = 0
@@ -178,7 +190,7 @@ def read_constraints():
                 capacity = int(processed_line[2])
                 room = Room(roomID, capacity)
                 all_buildings[buildingID].rooms.append(room) 
-                room_objects.append(room)
+                room_objects[roomID] = room
 
                 room_sizes.append(int(processed_line[2]))
                 rooms_read += 1    
@@ -194,7 +206,7 @@ def read_constraints():
                 class_section = True
             elif class_section ==True:
                 classID = int(processed_line[0])
-                teacherPairID = int(processed_line[1])
+                teacherID = int(processed_line[1])
                 dept = processed_line[3]
                 credit_hours = int(processed_line[4])
                 day_frequency = int(processed_line[5])
@@ -204,13 +216,24 @@ def read_constraints():
                 else:   
                     college = haverford  
                     
-                classObj = Class(classID,college,dept, 0, teacherPairID, day_frequency, credit_hours) 
+                classObj = Class(classID,college,dept, 0, teacherID, day_frequency, credit_hours) 
                 classObj.building = dept_to_buildings[dept]
                 classes_read += 1
                 all_classes[classID] = classObj
+                
                 b = building_objects.get(classObj.building[0])
                 b.classes.append(classObj)
-          
+                
+                if teacherID not in teacher_objects:          
+                    t = Teacher(teacherID)
+                    teacher_objects[t.ID] = t
+                    t.classes.append(classObj)
+                
+                else: 
+                    t = teacher_objects.get(teacherID)
+                    t.classes.append(classObj)
+                   
+                                
                 
                 if classes_read == num_of_classes:  
                     class_section = False
@@ -246,6 +269,9 @@ def compute_overlap(pref_list):
     over = {}
 
     for student_list in pref_list:
+        sID = int(student_list[0])
+        student = Student(sID)
+        student_objects[sID] = student
         for i in range(1, 5):
             current = class_objects.get(int(student_list[i]))
             current.popularity = current.popularity + 1
@@ -253,15 +279,15 @@ def compute_overlap(pref_list):
             for j in range(i+1, 5):
                 nxt = class_objects.get(int(student_list[j]))
                 pair = (min(current.ID, nxt.ID), max(current.ID, nxt.ID))
-
+              
                 if pair in over:
                     over[pair] = over[pair] + 1
                     if current.teacherID == nxt.teacherID:
-                        over[pair] = over[pair] + 50
+                        over[pair] = over[pair] + 10
                 else:
                     over[pair] = 1
                     if current.teacherID == nxt.teacherID:
-                        over[pair] = over[pair] + 50
+                        over[pair] = over[pair] + 10
                     
     overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1], reverse=True))
     return overlap
@@ -310,23 +336,37 @@ def assign_rooms(Buildings):
 
 def find_time(time_slots, teacher_conflict, room_conflict, blocked_times, j):
     valid_times = []
+
     for i in range(num_of_class_times - time_slots + 1):
-        # Check first slot
-        if teacher_conflict in time_matrix[i][j] or \
-            any(rc in time_matrix[i][j] for rc in room_conflict) or \
-                (blocked_times is not None and i in blocked_times):
-            continue
-        
-        end_time = i 
         valid = True
-        for a in range(1, time_slots):
-            if teacher_conflict in time_matrix[i + a][j] or \
-                any(rc in time_matrix[i + a][j] for rc in room_conflict) or \
-                    (blocked_times is not None and (i + a) in blocked_times):
+        end_time = i
+        # Check first slot
+        if blocked_times != None and i in blocked_times:
+            valid = False
+        for z in teacher_conflict:
+            if z.ID in time_matrix[i][j]: 
                 valid = False
+        for y in room_conflict:
+            if y.ID in time_matrix[i][j]:
+                valid = False
+        if valid == False:
+            continue
+         
+        for a in range(1, time_slots):
+            q = a + i
+            if blocked_times != None and q in blocked_times:
+                valid = False
+            for w in teacher_conflict:
+                if w.ID in time_matrix[q][j]: 
+                    valid = False
+            for x in room_conflict:
+                if x.ID in time_matrix[q][j]:
+                    valid = False
+            
+            if valid == False:
                 break
-            else:
-                end_time = i + a
+        
+            end_time = q
 
         if valid and ((end_time - i) + 1) == time_slots:
             valid_times.append((i, end_time))
@@ -334,12 +374,19 @@ def find_time(time_slots, teacher_conflict, room_conflict, blocked_times, j):
     return valid_times if valid_times else None
 
 def check_time(start_time, end_time, time_slots, j_range, t_conflict, r_conflict, blocked_times):
-    for day in j_range:
-        for k in range(time_slots):
-           if t_conflict in time_matrix[start_time + k][day] or \
-               any(rc in time_matrix[start_time + k][day] for rc in r_conflict) or \
-                   (blocked_times is not None and (start_time + k) in blocked_times):
-                       return False
+    for j in j_range:
+        for i in range(start_time, end_time+1):
+            if blocked_times != None and i in blocked_times:
+                return False
+            
+            for z in t_conflict:
+                if z.ID in time_matrix[i][j]: 
+                    return False
+                
+            for y in r_conflict:
+                if y.ID in time_matrix[i][j]:
+                    return False
+           
     return True
 
 def blocked_time_range(conflict_time):
@@ -355,18 +402,21 @@ DAYS = {
     1: ([0], [1], [2], [3], [4])
 }                    
                      
-def get_time(class_object, time_slots_per_day, day_frequency, class_conflict):
-    t_conflict = class_object.teacherID
-    r_conflict = [c.ID for c in class_object.room.classes if c.ID != class_object.ID]
-    blocked_times = blocked_time_range(class_conflict)
+def get_time(class_object, time_slots, day_frequency, class_conflict):
+    t = teacher_objects.get(class_object.teacherID)
+    t_con = t.classes
+    r_con = class_object.room.classes #list of classes with room conflict
+    s_con = blocked_time_range(class_conflict) #slot conflict
     a = DAYS.get(day_frequency)
+    
+    
     for combo in a:
         j = combo[0]
-        times = find_time(time_slots_per_day, t_conflict, r_conflict, class_conflict, j)  
-        if times == None:
-            return None 
+        times = find_time(time_slots, t_con, r_con, s_con, j)  
+        if times is None:
+            continue
         for time in times:
-            if check_time(time[0], time[1], time_slots_per_day, combo[1:], t_conflict, r_conflict, blocked_times) == True:
+            if check_time(time[0], time[1], time_slots, combo[1:], t_con, r_con, s_con) == True:
                 return time, combo       
     return None   
     
@@ -383,11 +433,11 @@ def place_class_in_room(class_object, room):
     if all(existing.ID != class_object.ID for existing in room.classes):
         room.classes.append(class_object)
 
-
 def assign_class_time(class_object, conflict_time):
     time_slots = max(1, math.ceil((class_object.credit_hours / class_object.day_frequency) * 2))
     assignment = get_time(class_object, time_slots, class_object.day_frequency, conflict_time)
-    if assignment is None:
+    
+    if assignment is None and conflict_time is not None:
         assignment = get_time(class_object, time_slots, class_object.day_frequency, None)
 
     original_room = class_object.room
@@ -401,7 +451,13 @@ def assign_class_time(class_object, conflict_time):
             assignment = get_time(class_object, time_slots, class_object.day_frequency, None)
             if assignment is not None:
                 break
+            else:
+                print("couldnt find time")
         
+    if assignment is None:
+        print(f"ERROR: No valid time found for class {class_object.ID}, skipping")
+        return
+
     class_time, class_days = assignment
     class_object.time = class_time
     class_object.days = class_days
@@ -423,24 +479,27 @@ def assign_times(overlap_pairs):
 
     for class_object in class_objects.values():
         if class_object.time == "":
-            assign_class_time(class_object, None)
-     
+            assign_class_time(class_object, None)  
+    
 def output_schedule(objects_list, stream=None):
     if stream is None:
         stream = sys.stdout
 
-    stream.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+    stream.write("Course\tRoom\tTeacher\tTime\tDays\tStudents\n")
 
-    ordered_classes = sorted(objects_list, key=lambda clss: int(clss.ID))
-
-    for clss in ordered_classes:
+    dic = {0: 'M', 1: 'T', 2: 'W', 3: 'TH', 4: 'F'}
+    for i, clss in objects_list.items():
         student_text = " ".join(str(student) for student in clss.students)
+        days = ""
+        for d in clss.days:
+            days = days + dic.get(d)
         row = "\t".join(
             [
                 str(clss.ID),
                 str(clss.room.ID),
                 str(clss.teacherID),
                 str(clss.time),
+                str(days),
                 student_text,
             ]
         )
@@ -448,38 +507,68 @@ def output_schedule(objects_list, stream=None):
         stream.write("\n")
         
 def assign_students(pref_list):
-    sorted_objects = sorted(class_objects.values(), key=lambda x: int(x.ID))
     couldnt_enroll_count = 0
     for list in pref_list:
-        studentID = int(list[0])
-        times_enrolled = [0] * num_of_class_times
-        for i in range(1,5):
-            clssID = int(list[i])
-            class_Class = sorted_objects[clssID-1]
-            #for each class on pref list check that student is available
-            #at that time, else don't enroll them and count
-            start = class_Class.time[0]
-            end = class_Class.time[1]
-            slots = range(start, end + 1)
-            if all(times_enrolled[slot] == 0 for slot in slots) and len(class_Class.students) < class_Class.room.capacity:
-                for slot in slots:
-                    times_enrolled[slot] = 1
-                class_Class.students.append(studentID)
-            else:
-                couldnt_enroll_count = couldnt_enroll_count + 1
-    
-    #This is line for checking optimality
-#    print("Couldnt enroll " + str(couldnt_enroll_count))
-#    opt = ((num_of_students * 4) - couldnt_enroll_count) / (num_of_students * 4)
-#    print("Opt " + str(opt))
-    return sorted_objects
+        s = student_objects.get(int(list[0])) 
+        s.schedule = [[0 for _ in range(5)] for _ in range(num_of_class_times)]
         
+        #For each class in the preference list
+        for i in range(1,5):
+            c = class_objects.get(int(list[i]))
+            start = c.time[0]
+            end = c.time[1]
+            slots = range(start, end + 1)
+            days = c.days
+            enroll = True
+            
+            #check for conflict
+            for a in days:
+                for b in slots:
+                    if s.schedule[b][a] != 0:
+                        enroll == False
+                        break
+            
+            if enroll == True:
+                for m in days:
+                    for n in slots:
+                        s.schedule[n][m] = 1            
+                c.students.append(s.ID)
+
+def check_teacher_conflict(): 
+    for i, t in teacher_objects.items():
+        s = [[0 for _ in range(5)] for _ in range(num_of_class_times)] 
+        for c in t.classes:
+            start = c.time[0]
+            end = c.time[1]
+            slots = range(start, end + 1)
+            days = c.days
+            enroll = True
+            
+            #check for conflict
+            for a in days:
+                for b in slots:
+                    if s[b][a] != 0:
+                        enroll == False
+                        print("Teacher conflict" + str(t.ID))  
+                        s[b][a] = -333                                                           
+            
+            if enroll == True:
+                for m in days:
+                    for n in slots:
+                        s[n][m] = 1   
+            
+        
+                        
+                      
 #MAIN
 overlap_conflict = compute_overlap(pref_list)
 assign_rooms(building_objects)
 assign_times(overlap_conflict)
-for c, o in class_objects.items():
-    print(c, o)
-all_classes = assign_students(pref_list)
-#output_schedule(all_classes)
+assign_students(pref_list)
+output_schedule(class_objects)
+check_teacher_conflict()
+# for i, t in teacher_objects.items():
+#     print(i)
+#     for c in t.classes:
+#         print(c)
 

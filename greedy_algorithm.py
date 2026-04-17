@@ -74,6 +74,10 @@ room_sizes = []
 pref_list = []
 num_of_class_times = 0
 
+if len(sys.argv) < 3:
+    print("Usage: algorithm.py <pref_list> <constraints> ")
+    sys.exit()
+
 #FUNCTIONS
 def read_constraints():
     with open(sys.argv[2], "r") as constraints_file:
@@ -90,53 +94,118 @@ def read_constraints():
         all_buildings = []
  
         dept_to_buildings = {
-        # Bryn Mawr majors
+    # Bryn Mawr
         "BMCBio": ["Park"],
         "BMCChem": ["Park"],
         "BMCGeo": ["Park"],
         "BMCMath": ["Park"],
         "BMCPhys": ["Park"],
-        "BMCPsych": ["Bettws"],
-        "BMCEduc": ["Bettws"],
+        "BMCAstro": ["Park"],
+        "BMCStats": ["Park"],
+        "BMCQuant": ["Park"],
         "BMCCS": ["Park"],
-        "BMCHist": ["OldLib"],
-        "BMCPhil": ["OldLib"],
-        "BMCCities": ["OldLib"],
-        "BMCSoc": ["Dalton"],
+        "BMCPsyc": ["Bettys"],
+        "BMCEduc": ["Bettys"],
+        "BMCPeace": ["Bettys"],
+        "BMCInter": ["Bettys"],
+        "BMCSocial": ["Dalton"],
+        "BMCSocl": ["Dalton"],
         "BMCAnth": ["Dalton"],
-        "BMCPoli": ["Dalton"],
+        "BMCPols": ["Dalton"],
         "BMCEcon": ["Dalton"],
-        "BMCClass": ["Carpenter"],
+        "BMCCsts": ["Dalton"],
+        "BMCGnst": ["Dalton"],
+        "BMCHist": ["OldLibrary"],
+        "BMCPhil": ["OldLibrary"],
+        "BMCCity": ["OldLibrary"],
+        "BMCRelg": ["OldLibrary"],
+        "BMCInde": ["OldLibrary"],
         "BMCArch": ["Carpenter"],
-        "BMCArtHist": ["Carpenter"],
-        "BMCEng": ["EngHouse"],
-        "BMCRus": ["EngHouse"],
-        "BMCMusic": ["Goodhart"],
-        "BMCTheater": ["Goodhart"],
+        "BMCHart": ["Carpenter"],
+        "BMCCnse": ["Carpenter"],
+        "BMCComl": ["Carpenter"],
+        "BMCCsem": ["Carpenter"],
+        "BMCEngl": ["EnglishHouse"],
+        "BMCEng": ["EnglishHouse"],
+        "BMCWrite": ["EnglishHouse"],
+        "BMCLing": ["EnglishHouse"],
+        "BMCRuss": ["RussianHouse"],
+        "BMCGerm": ["EnglishHouse"],
+        "BMCFren": ["EnglishHouse"],
+        "BMCSpan": ["EnglishHouse"],
+        "BMCItal": ["EnglishHouse"],
+        "BMCHebr": ["EnglishHouse"],
+        "BMCLatn": ["EnglishHouse"],
+        "BMCGrek": ["EnglishHouse"],
+        "BMCEast": ["EnglishHouse"],
+        "BMCJapan": ["EnglishHouse"],
+        "BMCArab": ["EnglishHouse"],
+        "BMCArtW": ["Goodhart"],
+        "BMCArtT": ["Goodhart"],
+        "BMCArtF": ["Goodhart"],
+        "BMCArtD": ["Goodhart"],
         "BMCArts": ["Goodhart"],
-        # Haverford majors
+        "BMCMusc": ["Goodhart"],
+        "BMCEnv": ["Park"],
+        # Haverford
         "HCBio": ["Sharpless"],
-        "HCPsych": ["Sharpless"],
-        "HCChem": ["KINSC"],
-        "HCPhys": ["KINSC"],
-        "HCAstro": ["KINSC"],
+        "HCPsyc": ["Sharpless"],
+        "HCEnv": ["Sharpless"],
+        "HCChem": ["Link"],
+        "HCPhys": ["Link"],
         "HCMath": ["Hilles"],
         "HCCS": ["Hilles"],
+        "HCGeo": ["Hilles"],
+        "HCStats": ["Hilles"],
+        "HCQuant": ["Hilles"],
+        "HCAstro": ["Observatory"],
         "HCEcon": ["Chase"],
-        "HCLing": ["Chase"],
+        "HCInter": ["Chase"],
+        "HCPeace": ["IraDeAReid"],
         "HCHist": ["Hall"],
-        "HCPoli": ["Hall"],
-        "HCSpanish": ["Hall"],
-        "HCCompLit": ["Hall"],
-        "HCEng": ["Woodside"],
+        "HCPols": ["Hall"],
+        "HCSpan": ["Hall"],
+        "HCComl": ["Hall"],
+        "HCRelg": ["Gest"],
+        "HCPhil": ["Gest"],
+        "HCEngl": ["WoodsideCottage"],
+        "HCEng": ["WoodsideCottage"],
+        "HCWrite": ["WoodsideCottage"],
+        "HCLing": ["WoodsideCottage"],
+        "HCGerm": ["WoodsideCottage"],
+        "HCFren": ["WoodsideCottage"],
+        "HCItal": ["WoodsideCottage"],
+        "HCEast": ["WoodsideCottage"],
+        "HCHebr": ["WoodsideCottage"],
+        "HCLatn": ["WoodsideCottage"],
+        "HCGrek": ["WoodsideCottage"],
+        "HCRuss": ["WoodsideCottage"],
+        "HCJapan": ["WoodsideCottage"],
+        "HCArab": ["WoodsideCottage"],
         "HCMusic": ["Roberts"],
         "HCAnth": ["Roberts"],
-        "HCSoc": ["Roberts"],
-        "HCRel": ["Roberts"],
-        "HCAfr": ["Union"],
-        "HCGender": ["Union"],
-        "HCHealth": ["Union"],
-    }
+        "HCSocl": ["Roberts"],
+        "HCArtW": ["GIAC"],
+        "HCArtT": ["GIAC"],
+        "HCArtF": ["GIAC"],
+        "HCArtD": ["GIAC"],
+        "HCHart": ["Marshall"],
+        "HCCnse": ["Stokes"],
+        "HCArts": ["GIAC"],
+        "HCMusc": ["Roberts"],
+        "HCCsts": ["Union"],
+        "HCGnst": ["Union"],
+        "HCCity": ["Union"],
+        "HCCsem": ["Union"],
+        "HCArch": ["Union"],
+        "HCEduc": ["SocialWork"],
+        "HCSocial": ["Union"],
+        "HCInde": ["Union"],
+        }        
+    
+
+
+
 
         for line in constraints_file:
             processed_line = line.split()
@@ -145,7 +214,7 @@ def read_constraints():
                 num_of_class_times = int(processed_line[2])
 
             elif processed_line[0] == "Buildings":
-                num_of_buildings = int(processed_line[1]) 
+                num_of_buildings = int(processed_line[1])
                 all_buildings = [""] * (num_of_buildings + 1)
                 buildings_section = True
 
@@ -156,7 +225,6 @@ def read_constraints():
                 buildings_room_num = int(processed_line[3]) #get the number of rooms in the building
                 building = Building(buildingID, building_name, buildings_room_num)  #create building object
                 building_objects[building.name] = building
-                
                 #seperate into buildings       
                 all_buildings[buildingID] = building
                 if processed_line[1] == "B":    
@@ -210,8 +278,8 @@ def read_constraints():
                 all_classes[classID] = classObj
                 b = building_objects.get(classObj.building[0])
                 b.classes.append(classObj)
-          
-                
+                                
+
                 if classes_read == num_of_classes:  
                     class_section = False
                 class_objects[classObj.ID] = classObj
@@ -232,9 +300,6 @@ def read_pref():
             pref_list.append(processed_line)
             i += 1
 
-if len(sys.argv) < 1:
-    print("Usage: algorithm.py <pref_list> <constraints> ")
-    exit
 
 read_constraints()
 read_pref()
@@ -246,11 +311,12 @@ def compute_overlap(pref_list):
     over = {}
 
     for student_list in pref_list:
-        for i in range(1, 5):
+        classes_per = min(4, (len(student_list)-1))
+        for i in range(1, classes_per):
             current = class_objects.get(int(student_list[i]))
             current.popularity = current.popularity + 1
                 
-            for j in range(i+1, 5):
+            for j in range(i+1, classes_per):
                 nxt = class_objects.get(int(student_list[j]))
                 pair = (min(current.ID, nxt.ID), max(current.ID, nxt.ID))
 

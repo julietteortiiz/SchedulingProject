@@ -1,4 +1,4 @@
-Student,Course ID,Subject,College,Level,Section,Status,Stat Dt,Add Dt,Drop Dt,Unit Taken,Instructor ID,Start_1,Srt1 AM/PM,Dec Start Time,End 1,End 1 AMPM,Dec End Time,Days 1,Facil ID 1,Building 1,Room 1
+Student ID,Course ID,Subject,Catalog,Level,Section,Status,Stat Dt,Add Dt,Drop Dt,Unit Taken,Instructor ID,Start_1,Srt1 AM/PM,Dec Start Time,End 1,End 1 AMPM,Dec End Time,Days 1,Facil ID 1,Building 1,Room 1
 1,692,COML,H,2,1,D,11/15/13,11/15/13,1/27/14,1,330,11:30:00 AM,11:30 AM,11.50,1:00:00 PM, 1:00 PM,13,T H,HLL6,HLL,6
 1,111,PEAC,H,2,1,E,1/27/14,1/27/14,,1,153,11:30:00 AM,11:30 AM,11.50,1:00:00 PM, 1:00 PM,13,T H,HLS109,HLS,109
 1,108,HIST,H,1,1,E,11/15/13,11/15/13,,1,105,10:00:00 AM,10:00 AM,10.00,11:30:00 AM,11:30 AM,11.5,T H,HLS109,HLS,109

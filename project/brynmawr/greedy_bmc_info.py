@@ -183,7 +183,7 @@ def get_courses(list_of_dicts):
             "GREK": "BMCGrek",
             "GNST": "BMCGnst",
             "ENVS": "BMCEnv",
-            
+            "RUSS": "BMCRus", 
             "QUAN": "BMCQuant",
             "ARAB": "BMCArab",
             "INST": "BMCInter",
@@ -236,6 +236,7 @@ def get_courses(list_of_dicts):
             "GEOL": "HCGeo",
             "GERM": "HCGerm",
             "COML": "HCComl",
+            "RUSS": "BMCRus",
             "LATN": "HCLatn",
             "CSEM": "HCCsem",
             "CSTS": "HCCsts",
@@ -319,7 +320,8 @@ def get_building(list_of_dicts):
             "IRADEAREID": "IraDeAReid",
             "MARSHAUD": "Marshall",
             "BYC": "Bettys",
-            "SW": "SocialWork"
+            "SW": "SocialWork",
+            "KIN": "KINSC"
         }
 
         building = next(

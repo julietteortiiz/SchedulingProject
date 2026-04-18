@@ -74,7 +74,7 @@ class Student:
         self.ID = ID
         self.schedule = ""
         
-#GLOBALS
+# GLOBALS
 brynmawr = College("Bryn Mawr")
 haverford = College("Haverford")
 class_objects = {}
@@ -90,7 +90,7 @@ if len(sys.argv) < 3:
     print("Usage: algorithm.py <pref_list> <constraints> ")
     sys.exit()
 
-#FUNCTIONS
+# FUNCTIONS
 def read_constraints():
     with open(sys.argv[2], "r") as constraints_file:
         line_number = 0 
@@ -104,6 +104,7 @@ def read_constraints():
         class_section = False
         classes_read = 0
         all_buildings = []
+        college_building_names = {"B": [], "H": []}
  
         dept_to_buildings = {
     # Bryn Mawr
@@ -116,20 +117,24 @@ def read_constraints():
         "BMCStats": ["Park"],
         "BMCQuant": ["Park"],
         "BMCCS": ["Park"],
-        "BMCPsyc": ["Bettys"],
-        "BMCEduc": ["Bettys"],
-        "BMCPeace": ["Bettys"],
-        "BMCInter": ["Bettys"],
+        "BMCPsyc": ["Bettys", "Bettws"],
+        "BMCPsych": ["Bettys", "Bettws"],
+        "BMCEduc": ["Bettys", "Bettws"],
+        "BMCPeace": ["Bettys", "Bettws"],
+        "BMCInter": ["Bettys", "Bettws"],
         "BMCSocial": ["Dalton"],
         "BMCSocl": ["Dalton"],
+        "BMCSoc": ["Dalton"],
         "BMCAnth": ["Dalton"],
         "BMCPols": ["Dalton"],
+        "BMCPoli": ["Dalton"],
         "BMCEcon": ["Dalton"],
         "BMCCsts": ["Dalton"],
         "BMCGnst": ["Dalton"],
-        "BMCHist": ["OldLibrary"],
-        "BMCPhil": ["OldLibrary"],
-        "BMCCity": ["OldLibrary"],
+        "BMCHist": ["OldLibrary", "OldLib"],
+        "BMCPhil": ["OldLibrary", "OldLib"],
+        "BMCCity": ["OldLibrary", "OldLib"],
+        "BMCCities": ["OldLibrary", "OldLib"],
         "BMCRelg": ["OldLibrary"],
         "BMCInde": ["OldLibrary"],
         "BMCArch": ["Carpenter"],
@@ -137,21 +142,22 @@ def read_constraints():
         "BMCCnse": ["Carpenter"],
         "BMCComl": ["Carpenter"],
         "BMCCsem": ["Carpenter"],
-        "BMCEngl": ["EnglishHouse"],
-        "BMCEng": ["EnglishHouse"],
-        "BMCWrite": ["EnglishHouse"],
-        "BMCLing": ["EnglishHouse"],
-        "BMCRus": ["RussianHouse"],
-        "BMCGerm": ["EnglishHouse"],
-        "BMCFren": ["EnglishHouse"],
-        "BMCSpan": ["EnglishHouse"],
-        "BMCItal": ["EnglishHouse"],
-        "BMCHebr": ["EnglishHouse"],
-        "BMCLatn": ["EnglishHouse"],
-        "BMCGrek": ["EnglishHouse"],
-        "BMCEast": ["EnglishHouse"],
-        "BMCJapan": ["EnglishHouse"],
-        "BMCArab": ["EnglishHouse"],
+        "BMCEngl": ["EnglishHouse", "EngHouse"],
+        "BMCEng": ["EnglishHouse", "EngHouse"],
+        "BMCWrite": ["EnglishHouse", "EngHouse"],
+        "BMCLing": ["EnglishHouse", "EngHouse"],
+        "BMCRus": ["RussianHouse", "EngHouse"],
+        "BMCRuss": ["RussianHouse", "EngHouse"],
+        "BMCGerm": ["EnglishHouse", "EngHouse"],
+        "BMCFren": ["EnglishHouse", "EngHouse"],
+        "BMCSpan": ["EnglishHouse", "EngHouse"],
+        "BMCItal": ["EnglishHouse", "EngHouse"],
+        "BMCHebr": ["EnglishHouse", "EngHouse"],
+        "BMCLatn": ["EnglishHouse", "EngHouse"],
+        "BMCGrek": ["EnglishHouse", "EngHouse"],
+        "BMCEast": ["EnglishHouse", "EngHouse"],
+        "BMCJapan": ["EnglishHouse", "EngHouse"],
+        "BMCArab": ["EnglishHouse", "EngHouse"],
         "BMCArtW": ["Goodhart"],
         "BMCArtT": ["Goodhart"],
         "BMCArtF": ["Goodhart"],
@@ -159,10 +165,10 @@ def read_constraints():
         "BMCArts": ["Goodhart"],
         "BMCMusc": ["Goodhart"],
         "BMCEnv": ["Park"],
-        "BMCRus": ["RussianHouse"],
         # Haverford
         "HCBio": ["Sharpless"],
         "HCPsyc": ["Sharpless"],
+        "HCPsych": ["Sharpless"],
         "HCEnv": ["Sharpless"],
         "HCChem": ["Sharpless"],
         "HCPhys": ["Hilles"],
@@ -177,27 +183,31 @@ def read_constraints():
         "HCPeace": ["IraDeAReid"],
         "HCHist": ["Hall"],
         "HCPols": ["Hall"],
+        "HCPoli": ["Hall"],
         "HCSpan": ["Hall"],
+        "HCSpanish": ["Hall"],
         "HCComl": ["Hall"],
+        "HCCompLit": ["Hall"],
         "HCRelg": ["Gest"],
         "HCPhil": ["Gest"],
-        "HCEngl": ["WoodsideCottage"],
-        "HCEng": ["WoodsideCottage"],
-        "HCWrite": ["WoodsideCottage"],
-        "HCLing": ["WoodsideCottage"],
-        "HCGerm": ["WoodsideCottage"],
-        "HCFren": ["WoodsideCottage"],
-        "HCItal": ["WoodsideCottage"],
-        "HCEast": ["WoodsideCottage"],
-        "HCHebr": ["WoodsideCottage"],
-        "HCLatn": ["WoodsideCottage"],
-        "HCGrek": ["WoodsideCottage"],
-        "HCRuss": ["WoodsideCottage"],
-        "HCJapan": ["WoodsideCottage"],
-        "HCArab": ["WoodsideCottage"],
+        "HCEngl": ["WoodsideCottage", "Woodside"],
+        "HCEng": ["WoodsideCottage", "Woodside"],
+        "HCWrite": ["WoodsideCottage", "Woodside"],
+        "HCLing": ["WoodsideCottage", "Woodside"],
+        "HCGerm": ["WoodsideCottage", "Woodside"],
+        "HCFren": ["WoodsideCottage", "Woodside"],
+        "HCItal": ["WoodsideCottage", "Woodside"],
+        "HCEast": ["WoodsideCottage", "Woodside"],
+        "HCHebr": ["WoodsideCottage", "Woodside"],
+        "HCLatn": ["WoodsideCottage", "Woodside"],
+        "HCGrek": ["WoodsideCottage", "Woodside"],
+        "HCRuss": ["WoodsideCottage", "Woodside"],
+        "HCJapan": ["WoodsideCottage", "Woodside"],
+        "HCArab": ["WoodsideCottage", "Woodside"],
         "HCMusic": ["Roberts"],
         "HCAnth": ["Roberts"],
         "HCSocl": ["Roberts"],
+        "HCSoc": ["Roberts"],
         "HCArtW": ["GIAC"],
         "HCArtT": ["GIAC"],
         "HCArtF": ["GIAC"],
@@ -211,11 +221,23 @@ def read_constraints():
         "HCCity": ["Union"],
         "HCCsem": ["Union"],
         "HCArch": ["Union"],
+        "HCGender": ["Union"],
+        "HCHealth": ["Union"],
         "HCEduc": ["SocialWork"],
         "HCSocial": ["Union"],
         "HCInde": ["Union"],
         }        
-    
+        
+        def resolve_building_name(dept, college_code):
+            for building_name in dept_to_buildings.get(dept, []):
+                if building_name in building_objects:
+                    return building_name
+
+            same_college_buildings = college_building_names.get(college_code, [])
+            if same_college_buildings:
+                return same_college_buildings[0]
+
+            raise KeyError(f"No building mapping found for department {dept}")
 
 
 
@@ -244,6 +266,7 @@ def read_constraints():
                     brynmawr.buildings[building] = building.depts
                 else:   
                     haverford.buildings[building] = building.depts
+                college_building_names[processed_line[1]].append(building.name)
                 buildings_read += 1
                 if buildings_read == num_of_buildings:
                     buildings_section = False
@@ -286,7 +309,7 @@ def read_constraints():
                     college = haverford  
                     
                 classObj = Class(classID,college,dept, 0, teacherID, day_frequency, credit_hours) 
-                classObj.building = dept_to_buildings[dept]
+                classObj.building = [resolve_building_name(dept, processed_line[2])]
                 classes_read += 1
                 all_classes[classID] = classObj
                 
@@ -563,6 +586,10 @@ def output_schedule(objects_list, stream=None):
 
     dic = {0: 'M', 1: 'T', 2: 'W', 3: 'TH', 4: 'F'}
     for i, clss in objects_list.items():
+        # Skip courses that never received a complete assignment.
+        if clss.room in ("", None) or clss.time in ("", None) or clss.days in ("", None):
+            continue
+
         student_text = " ".join(str(student) for student in clss.students)
         days = ""
         for d in clss.days:
@@ -606,6 +633,10 @@ def assign_students(pref_list):
                         break
             
             if enroll == True:
+                if len(c.students) >= c.room.capacity:
+                    couldnt_enroll_count += 1
+                    continue
+
                 for m in days:
                     for n in slots:
                         s.schedule[n][m] = 1            
@@ -655,4 +686,3 @@ check_teacher_conflict()
 #     print(i)
 #     for c in t.classes:
 #         print(c)
-

@@ -4,7 +4,7 @@ from collections import OrderedDict
 import math
 
 
-#Objects
+# Objects
 
 class College:
     def __init__(self, name):
@@ -600,7 +600,10 @@ def assign_class_time(class_object, conflict_time):
             assignment = get_time(class_object, time_slots, class_object.day_frequency, None)
             if assignment is not None:
                 break
-        
+
+    if assignment is None:
+        print(f"ERROR: No valid time found for class {class_object.ID}, skipping")
+        return
 
     class_time, class_days = assignment
     class_object.time = class_time
@@ -663,7 +666,7 @@ def assign_students(pref_list):
         s = student_objects.get(int(list[0])) 
         s.schedule = [[0 for _ in range(5)] for _ in range(num_of_class_times)]
 
-        #For each class in the preference list
+        # For each class in the preference list
         for i in range(1,min(5, len(list))):
             c = class_objects.get(int(list[i]))
             if not c or c.time == "":
@@ -674,7 +677,7 @@ def assign_students(pref_list):
             days = c.days
             enroll = True
             
-            #check for conflict
+            # check for conflict
             for a in days:
                 for b in slots:
                     if s.schedule[b][a] != 0:
@@ -692,9 +695,10 @@ def assign_students(pref_list):
                 c.students.append(s.ID)
                 successful_classes += 1
             else:
-                couldnt_enroll_count +=1
-   # print("Couldn't enroll:" + str(couldnt_enroll_count))
-  #  print("Successful enrollements:" + str(successful_classes))
+                couldnt_enroll_count += 1
+
+    print("Couldn't enroll:" + str(couldnt_enroll_count))
+    print("Successful enrollements:" + str(successful_classes))
 
 def check_teacher_conflict(): 
     for i, t in teacher_objects.items():
@@ -723,7 +727,7 @@ def check_teacher_conflict():
 
                                
                       
-#MAIN
+# MAIN
 overlap_conflict = compute_overlap(pref_list)
 assign_rooms(building_objects)
 assign_times(overlap_conflict)

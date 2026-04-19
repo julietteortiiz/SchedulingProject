@@ -1,0 +1,5 @@
+case,seed,class_times,rooms,classes,min_rooms_per_building,min_room_capacity,max_room_capacity,students,credit_hours,credit_hour_weights,generation_seconds,scheduling_seconds,couldnt_enroll,optimality,validation
+classes_10,100,15,30,10,1,6,120,100,"2,3,4","0.15,0.55,0.30",0.0487,0.0257,152,0.62,valid
+classes_100,101,15,30,100,1,6,120,100,"2,3,4","0.15,0.55,0.30",0.0525,0.0290,102,0.745,valid
+classes_1000,102,15,30,1000,1,6,120,100,"2,3,4","0.15,0.55,0.30",0.0597,0.3486,75,0.8125,valid
+classes_10000,103,15,30,10000,1,6,120,100,"2,3,4","0.15,0.55,0.30",0.1045,15.5716,129,0.6775,valid

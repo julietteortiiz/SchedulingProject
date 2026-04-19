@@ -34,6 +34,13 @@ my %studentDaySlot = ();
 
 my $lineno = 0;
 my $stuprefs = 0;
+
+my $bestcase = 0;
+
+for my $stu (keys %origStudentPrefs) {
+    $bestcase += scalar(@{$origStudentPrefs{$stu}});
+}
+
 while (my $line = <$sched_fh>) {
 	chomp $line;
 
@@ -187,7 +194,10 @@ while (my $line = <$sched_fh>) {
 }
 
 print "Schedule is valid.\n";
-print "Student preferences value: ", $stuprefs, "\n";
+print "Student Preferences Value: ", $stuprefs, "\n";
+print "Best Case Student Preference Value: ", $bestcase, "\n";
+my $fit = int(($stuprefs/$bestcase) * 1000) /1000;
+print "Fit percentage: ", $fit, "%\n";
 
 exit 0;
 

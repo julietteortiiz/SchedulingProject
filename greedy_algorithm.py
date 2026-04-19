@@ -4,6 +4,7 @@ from collections import OrderedDict
 import math
 
 
+#Objects
 
 class College:
     def __init__(self, name):
@@ -90,7 +91,21 @@ if len(sys.argv) < 3:
     print("Usage: algorithm.py <pref_list> <constraints> ")
     sys.exit()
 
-# FUNCTIONS
+# P1: READ INPUTS
+
+#Information in our constraints file (created from real data):
+# number of class times
+# number of buildings
+# for each building: id, college, name, number of rooms
+# number of rooms
+# for each room: id, building id, capacity
+# number of classes
+# number of teachers
+# for each class: id, teacherID, college, department, credit hours, day frequency
+# NOTES FOR REAL DATA:
+# 1. some classes dont have teachers assigned, teacherID = -1
+# 2. some classes dont have number of days, so we don't assign time
+
 def read_constraints():
     with open(sys.argv[2], "r") as constraints_file:
         line_number = 0 
@@ -347,14 +362,14 @@ def read_pref():
             pref_list.append(processed_line)
             i += 1
 
-
 read_constraints()
 read_pref()
 
-rows, cols = (num_of_class_times+ 2), 5
-time_matrix = [[set() for _ in range(cols)] for _ in range(rows)]
-room_matrix = [[set() for _ in range(5)] for _ in range(num_of_class_times)]
 
+# Computer Overlap finds and orders classes with the most conflict
+# also keeps track of popularity
+# if a pair (c1,c2) share a teacherID, their conflict score is tripled everytime it appears
+# this is aimed to prioritize scheduling classes with teacher conflict 
 def compute_overlap(pref_list):
     over = {}
 
@@ -374,15 +389,17 @@ def compute_overlap(pref_list):
                 if pair in over:
                     over[pair] = over[pair] + 1
                     if current.teacherID == nxt.teacherID:
-                        over[pair] = over[pair] * 2
+                        over[pair] = over[pair] * 3
                 else:
                     over[pair] = 1
                     if current.teacherID != -1 and current.teacherID == nxt.teacherID:
-                        over[pair] = over[pair] * 2
+                        over[pair] = over[pair] * 3
                     
     overlap = OrderedDict(sorted(over.items(), key=lambda item: item[1], reverse=True))
     return overlap
  
+# Assign all classes to a room in their building based of their
+# popularity score compared to other classes in that building
 def assign_rooms(Buildings):
         
     for name, building in Buildings.items():  
@@ -425,6 +442,27 @@ def assign_rooms(Buildings):
                     sorted_rooms[a].classes.append(current_class)
                     del sorted_classes[0]
 
+# ASSIGN TIME FUNCTIONS _______________________________________
+
+# Initialize data structures which will allow us to keep track of conflict when 
+# assigning times
+rows, cols = (num_of_class_times+ 2), 5
+time_matrix = [[set() for _ in range(cols)] for _ in range(rows)] #track teacher conflict
+room_matrix = [[set() for _ in range(5)] for _ in range(num_of_class_times)] #track room conflict
+
+# key = day frequency
+# value = different combinations of days we consider for scheduling
+DAYS = {
+    5: [[0, 1, 2, 3, 4]],
+    4: [[0, 1, 3, 4]],
+    3: ([0, 2, 4], [1, 3, 4]),
+    2: ([0, 2], [1, 3], [2, 4], [1, 4], [0, 3]),
+    1: ([0], [1], [2], [3], [4])
+} 
+
+# 1. Given a class, search for all available times on the first day of a possible combination
+# Idea: If not available time on first day of a day combination, then that combo 
+# can be dumped
 def find_time(time_slots, teacher_id, room_id, blocked_times, j):
     valid_times = []
     for i in range(num_of_class_times - time_slots + 1):
@@ -458,8 +496,9 @@ def find_time(time_slots, teacher_id, room_id, blocked_times, j):
             valid_times.append((i, end_time))
 
     return valid_times if valid_times else None 
-            
 
+#2. Given a time, check that there's no teacher and room conflict for all days in combination
+# Idea: given a time from find_time(), we can check that it's valid for a class for all days      
 def check_time(start_time, end_time, time_slots, j_range, teacher_id, room_id, blocked_times):
     for j in j_range:
         for i in range(start_time, end_time + 1):
@@ -471,19 +510,19 @@ def check_time(start_time, end_time, time_slots, j_range, teacher_id, room_id, b
                 return False
     return True
 
+#3. For an overlap pair, if we have the time of one class get the range of time slots 
+# we don't want the second class to be scheduled in
 def blocked_time_range(conflict_time):
     if conflict_time in (None, ""):
         return None
     return set(range(conflict_time[0], conflict_time[1] + 1))
-
-DAYS = {
-    5: [[0, 1, 2, 3, 4]],
-    4: [[0, 1, 3, 4]],
-    3: ([0, 2, 4], [1, 3, 4]),
-    2: ([0, 2], [1, 3], [2, 4], [1, 4], [0, 3]),
-    1: ([0], [1], [2], [3], [4])
-}                    
-                     
+               
+#4. Given a class, we identify
+#    a. teacher conflict
+#    b. room conflict
+#    c. overlapping pair conflict time
+#    d. all possible day combinations given the day frequency
+# Then we call find_time and check_time until we can return a valid time/days for our class                  
 def get_time(class_object, time_slots, day_frequency, class_conflict):
     teacher_id = class_object.teacherID
     room_id = class_object.room.ID
@@ -498,13 +537,17 @@ def get_time(class_object, time_slots, day_frequency, class_conflict):
             if check_time(time[0], time[1], time_slots, combo[1:], teacher_id, room_id, s_con):
                 return time, combo
     return None
-    
+
+# Use update matrix to track where classes are being scheduled
+# update both our time matrix and room matrix to track conflict   
 def update_matrix(class_object, time, days):
     for day in days:
         for i in range(time[0], time[1]+1):
             time_matrix[i][day].add(class_object.teacherID)  
             room_matrix[i][day].add(class_object.room.ID)
-            
+ 
+# Assign class to a different room if no time can be found
+# Called from assign_class_time()        
 def place_class_in_room(class_object, room):
     if class_object.room not in ("", None):
         class_object.room.classes = [c for c in class_object.room.classes if c.ID != class_object.ID]
@@ -513,10 +556,15 @@ def place_class_in_room(class_object, room):
     if all(existing.ID != class_object.ID for existing in room.classes):
         room.classes.append(class_object)
 
+# Function where we troubleshoot cases where
+# a. no day frequency
+# b. if no time can be found: reassign class to different room in same building and recheck
+# c. if time still can't be found: find a room in the same college and try assigning to room with least number of 
+# classes assigned to it
 def assign_class_time(class_object, conflict_time):
     if class_object.day_frequency == 0:
-        print(f"WARNING: class {class_object.ID} has day_frequency 0, skipping")
-        return
+        # print(f"WARNING: class {class_object.ID} has day_frequency 0, skipping")
+         return
     
     time_slots = max(1, math.ceil((class_object.credit_hours / class_object.day_frequency) * 2))
     assignment = get_time(class_object, time_slots, class_object.day_frequency, conflict_time)
@@ -553,22 +601,13 @@ def assign_class_time(class_object, conflict_time):
             if assignment is not None:
                 break
         
-    if assignment is None:
-        place_class_in_room(class_object, original_room)
-        t = teacher_objects.get(class_object.teacherID)
-        if t:
-            scheduled = [c for c in t.classes if c.time != "" and c.ID != class_object.ID]
-            print(f"Teacher {class_object.teacherID} scheduled classes: {[(c.ID, c.time, c.days) for c in scheduled]}")
-        time_slots = max(1, math.ceil((class_object.credit_hours / class_object.day_frequency) * 2))
-        print(f"Class {class_object.ID}: credit_hours={class_object.credit_hours}, day_freq={class_object.day_frequency}, needs {time_slots} slots on {class_object.day_frequency} days")
-        print(f"ERROR: No valid time found for class {class_object.ID}, skipping")
-        return
 
     class_time, class_days = assignment
     class_object.time = class_time
     class_object.days = class_days
     update_matrix(class_object, class_time, class_days)
-    
+
+# Core function where we go through every conflict pair from computer_overlap()   
 def assign_times(overlap_pairs):
     for pair in overlap_pairs:
         class1 = class_objects[pair[0]]
@@ -586,7 +625,8 @@ def assign_times(overlap_pairs):
     for class_object in class_objects.values():
         if class_object.time == "":
             assign_class_time(class_object, None)  
-    
+
+# END TIME FUNCTIONS ______________________________________________________________   
 def output_schedule(objects_list, stream=None):
     if stream is None:
         stream = sys.stdout
@@ -681,30 +721,12 @@ def check_teacher_conflict():
                     for n in slots:
                         s[n][m] = 1   
 
-def diagnose_failures():
-    failed = [c for c in class_objects.values() 
-              if c.time == "" and c.day_frequency != 0]
-    
-    building_counts = {}
-    for c in failed:
-        b = c.building[0]
-        building_counts[b] = building_counts.get(b, 0) + 1
-    
-    print("\n--- FAILED CLASSES BY BUILDING ---")
-    for b, count in sorted(building_counts.items(), key=lambda x: -x[1]):
-        bldg = building_objects[b]
-        total = len(bldg.classes)
-        rooms = len(bldg.rooms)
-        print(f"{b}: {count} failed, {total} classes, {rooms} rooms")
-          
-        
-                        
+                               
                       
 #MAIN
 overlap_conflict = compute_overlap(pref_list)
 assign_rooms(building_objects)
 assign_times(overlap_conflict)
-diagnose_failures()
 assign_students(pref_list)
 output_schedule(class_objects)
 check_teacher_conflict()

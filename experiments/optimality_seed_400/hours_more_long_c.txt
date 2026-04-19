@@ -1,0 +1,100 @@
+Class Times	15
+Buildings	15
+1	B	Park	2
+2	B	Bettws	2
+3	B	OldLib	4
+4	B	Dalton	3
+5	B	Carpenter	3
+6	B	EngHouse	2
+7	B	Goodhart	1
+8	H	Sharpless	2
+9	H	KINSC	1
+10	H	Hilles	1
+11	H	Chase	4
+12	H	Hall	2
+13	H	Roberts	1
+14	H	Woodside	1
+15	H	Union	1
+Rooms	30
+1	1	105
+2	1	29
+3	2	118
+4	2	22
+5	3	98
+6	3	104
+7	3	87
+8	3	66
+9	4	95
+10	4	45
+11	4	93
+12	5	42
+13	5	10
+14	5	20
+15	6	69
+16	6	63
+17	7	116
+18	8	107
+19	8	71
+20	9	106
+21	10	20
+22	11	77
+23	11	104
+24	11	81
+25	11	19
+26	12	73
+27	12	100
+28	13	52
+29	14	86
+30	15	120
+Classes	50
+Teachers	25
+1	26	H	HCHealth	2	2
+2	8	B	BMCPhil	4	3
+3	23	B	BMCPoli	4	2
+4	31	B	BMCTheater	3	2
+5	45	B	BMCPhil	2	2
+6	39	H	HCRel	2	1
+7	29	B	BMCRus	4	3
+8	2	B	BMCPhil	4	3
+9	25	B	BMCRus	3	3
+10	35	H	HCCompLit	4	3
+11	40	H	HCAfr	3	3
+12	47	H	HCAfr	4	2
+13	22	B	BMCCS	3	2
+14	48	B	BMCArch	4	3
+15	21	B	BMCEduc	3	3
+16	37	H	HCMath	3	2
+17	46	B	BMCSoc	4	3
+18	38	H	HCBio	4	2
+19	20	H	HCSoc	4	3
+20	19	H	HCSoc	4	3
+21	15	B	BMCEduc	3	3
+22	13	B	BMCCS	3	2
+23	3	B	BMCPoli	4	2
+24	50	B	BMCClass	4	3
+25	9	B	BMCRus	3	3
+26	1	H	HCHealth	2	2
+27	44	B	BMCMath	4	3
+28	32	H	HCPhys	3	2
+29	7	B	BMCRus	4	3
+30	36	H	HCHealth	3	3
+31	4	B	BMCTheater	3	3
+32	28	H	HCPhys	3	2
+33	34	H	HCCS	4	2
+34	33	H	HCCS	4	3
+35	10	H	HCCompLit	4	2
+36	30	H	HCHealth	3	2
+37	16	H	HCMath	3	2
+38	18	H	HCBio	4	2
+39	6	H	HCRel	2	2
+40	11	H	HCAfr	3	2
+41	49	B	BMCGeo	3	3
+42	43	H	HCSoc	3	2
+43	42	H	HCSoc	3	2
+44	27	B	BMCMath	4	2
+45	5	B	BMCPhil	2	1
+46	17	B	BMCSoc	4	3
+47	12	H	HCAfr	4	3
+48	14	B	BMCArch	4	2
+49	41	B	BMCGeo	3	2
+50	24	B	BMCClass	4	2

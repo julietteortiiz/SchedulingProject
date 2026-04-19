@@ -522,7 +522,7 @@ def blocked_time_range(conflict_time):
 #    b. room conflict
 #    c. overlapping pair conflict time
 #    d. all possible day combinations given the day frequency
-# Then we call find_time and check_time until we can return a valid time/days for our class                  
+project/brynmawr/real_student_prefs.txt# Then we call find_time and check_time until we can return a valid time/days for our class                  
 def get_time(class_object, time_slots, day_frequency, class_conflict):
     teacher_id = class_object.teacherID
     room_id = class_object.room.ID

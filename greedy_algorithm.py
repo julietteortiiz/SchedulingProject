@@ -697,8 +697,8 @@ def assign_students(pref_list):
             else:
                 couldnt_enroll_count += 1
 
-    print("Couldn't enroll:" + str(couldnt_enroll_count))
-    print("Successful enrollements:" + str(successful_classes))
+    # print("Couldn't enroll:" + str(couldnt_enroll_count))
+    # print("Successful enrollements:" + str(successful_classes))
 
 def check_teacher_conflict(): 
     for i, t in teacher_objects.items():

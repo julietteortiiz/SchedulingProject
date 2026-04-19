@@ -12,7 +12,6 @@ optimality:
 		s="/tmp/$$(basename "$$base")_schedule.txt"; \
 		echo "== $$(basename "$$base") =="; \
 		python3 greedy_algorithm.py "$$p" "$$c" | tee /tmp/run.txt | awk 'BEGIN{keep=0} /^Course\tRoom\tTeacher\tTime\tDays\tStudents$$/{keep=1} keep' > "$$s"; \
-		grep -E "Couldn't enroll:|Successful enrollements:" /tmp/run.txt; \
 		perl is_valid_v2.pl "$$c" "$$p" "$$s"; \
 	done
 
@@ -24,6 +23,5 @@ class_scale:
 		s="/tmp/$$(basename "$$base")_schedule.txt"; \
 		echo "== $$(basename "$$base") =="; \
 		python3 greedy_algorithm.py "$$p" "$$c" | tee /tmp/run.txt | awk 'BEGIN{keep=0} /^Course\tRoom\tTeacher\tTime\tDays\tStudents$$/{keep=1} keep' > "$$s"; \
-		grep -E "Couldn't enroll:|Successful enrollements:" /tmp/run.txt; \
 		perl is_valid_v2.pl "$$c" "$$p" "$$s"; \
 	done

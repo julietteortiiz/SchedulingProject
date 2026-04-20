@@ -1,0 +1,19 @@
+% Plot-only version (no figure/caption). Safe for rendering to PDF/JPEG.
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.98\linewidth,
+  height=7cm,
+  ybar,
+  ymin=0, ymax=1,
+  ylabel={Quality (achieved / best-case upper bound)},
+  xlabel={Scenario},
+  symbolic x coords={baseline,rooms\_20,rooms\_40,class\_times\_12,class\_times\_18,students\_75,students\_150,capacity\_tight,capacity\_large,hours\_more\_short,hours\_more\_long},
+  xtick=data,
+  x tick label style={rotate=35, anchor=east},
+  bar width=9pt,
+  grid=y,
+]
+\addplot table [col sep=comma, x=case_tex, y=optimality_mean] {overleaf/data/optimality_agg.csv};
+\end{axis}
+\end{tikzpicture}
+

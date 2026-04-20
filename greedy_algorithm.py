@@ -2,6 +2,8 @@
 import sys
 from collections import OrderedDict
 import math
+import os
+import random
 
 
 # Objects
@@ -86,6 +88,8 @@ student_objects = {}
 room_sizes = []
 pref_list = []
 num_of_class_times = 0
+BUILDING_ASSIGNMENT_MODE = os.getenv("SCHED_BUILDING_MODE", "mapped").strip().lower()
+BUILDING_RANDOM_SEED = int(os.getenv("SCHED_BUILDING_RANDOM_SEED", "0"))
 
 if len(sys.argv) < 3:
     print("Usage: algorithm.py <pref_list> <constraints> ")
@@ -120,6 +124,8 @@ def read_constraints():
         classes_read = 0
         all_buildings = []
         college_building_names = {"B": [], "H": []}
+        random_building_rng = random.Random(BUILDING_RANDOM_SEED)
+        random_building_cache = {}
  
         dept_to_buildings = {
     # Bryn Mawr
@@ -161,9 +167,9 @@ def read_constraints():
         "BMCEng": ["EnglishHouse", "EngHouse"],
         "BMCWrite": ["EnglishHouse", "EngHouse"],
         "BMCLing": ["EnglishHouse", "EngHouse"],
-        "BMCRus": ["RussianHouse", "EngHouse"],
-        "BMCRuss": ["RussianHouse", "EngHouse"],
-        "BMCGerm": ["EnglishHouse", "EngHouse"],
+        "BMCRus": ["RussianHouse", "RusHouse"],
+        "BMCRuss": ["RussianHouse", "RusHouse"],
+        "BMCGerm": ["EnglishHouse", "RusHouse"],
         "BMCFren": ["EnglishHouse", "EngHouse"],
         "BMCSpan": ["EnglishHouse", "EngHouse"],
         "BMCItal": ["EnglishHouse", "EngHouse"],
@@ -244,6 +250,15 @@ def read_constraints():
         }        
         
         def resolve_building_name(dept, college_code):
+            if BUILDING_ASSIGNMENT_MODE == "random":
+                cache_key = (college_code, dept)
+                if cache_key not in random_building_cache:
+                    same_college_buildings = college_building_names.get(college_code, [])
+                    if not same_college_buildings:
+                        raise KeyError(f"No building mapping found for department {dept}")
+                    random_building_cache[cache_key] = random_building_rng.choice(same_college_buildings)
+                return random_building_cache[cache_key]
+
             for building_name in dept_to_buildings.get(dept, []):
                 if building_name in building_objects:
                     return building_name
@@ -522,7 +537,7 @@ def blocked_time_range(conflict_time):
 #    b. room conflict
 #    c. overlapping pair conflict time
 #    d. all possible day combinations given the day frequency
-project/brynmawr/real_student_prefs.txt# Then we call find_time and check_time until we can return a valid time/days for our class                  
+# Then we call find_time and check_time until we can return a valid time/days for our class.
 def get_time(class_object, time_slots, day_frequency, class_conflict):
     teacher_id = class_object.teacherID
     room_id = class_object.room.ID
@@ -631,6 +646,8 @@ def assign_times(overlap_pairs):
 
 # END TIME FUNCTIONS ______________________________________________________________   
 def output_schedule(objects_list, stream=None):
+    if os.getenv("SCHED_NO_OUTPUT") == "1":
+        return
     if stream is None:
         stream = sys.stdout
 
@@ -662,9 +679,12 @@ def output_schedule(objects_list, stream=None):
 def assign_students(pref_list):
     couldnt_enroll_count = 0
     successful_classes = 0
+    best_case = 0
     for list in pref_list:
         s = student_objects.get(int(list[0])) 
         s.schedule = [[0 for _ in range(5)] for _ in range(num_of_class_times)]
+
+        best_case += max(0, min(4, len(list) - 1))
 
         # For each class in the preference list
         for i in range(1,min(5, len(list))):
@@ -699,6 +719,7 @@ def assign_students(pref_list):
 
     # print("Couldn't enroll:" + str(couldnt_enroll_count))
     # print("Successful enrollements:" + str(successful_classes))
+    return couldnt_enroll_count, successful_classes, best_case
 
 def check_teacher_conflict(): 
     for i, t in teacher_objects.items():
@@ -731,6 +752,17 @@ def check_teacher_conflict():
 overlap_conflict = compute_overlap(pref_list)
 assign_rooms(building_objects)
 assign_times(overlap_conflict)
-assign_students(pref_list)
+couldnt_enroll_count, student_pref_value, best_case_pref_value = assign_students(pref_list)
 output_schedule(class_objects)
-check_teacher_conflict()
+if os.getenv("SCHED_NO_OUTPUT") != "1":
+    check_teacher_conflict()
+
+if os.getenv("SCHED_SUMMARY") == "1":
+    optimality = 0.0
+    if best_case_pref_value > 0:
+        optimality = student_pref_value / best_case_pref_value
+    sys.stderr.write("SCHED_SUMMARY\n")
+    sys.stderr.write(f"couldnt_enroll={couldnt_enroll_count}\n")
+    sys.stderr.write(f"student_pref_value={student_pref_value}\n")
+    sys.stderr.write(f"best_case_pref_value={best_case_pref_value}\n")
+    sys.stderr.write(f"optimality={optimality:.6f}\n")

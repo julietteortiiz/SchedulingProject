@@ -1,8 +1,5 @@
-Traceback (most recent call last):
-  File "/home/fayad/SchedulingProject/juliette.py", line 482, in <module>
-    assign_times(overlap_conflict)
-  File "/home/fayad/SchedulingProject/juliette.py", line 417, in assign_times
-    assign_class_time(class1, None)
-  File "/home/fayad/SchedulingProject/juliette.py", line 405, in assign_class_time
-    raise RuntimeError(f"Could not assign a valid time for class {class_object.ID}.")
-RuntimeError: Could not assign a valid time for class 6359.
+SCHED_SUMMARY
+couldnt_enroll=64
+student_pref_value=272
+best_case_pref_value=400
+optimality=0.680000

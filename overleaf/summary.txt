@@ -1,0 +1,2 @@
+Computed aggregates from experiments/all_results.
+Minimum observed scenario quality: 0.617 (case=students_75, seed=205)

@@ -1,0 +1,1 @@
+classes=100000 benchmark (seed=600): generation_seconds=0.8422, scheduling_seconds=3781.1318

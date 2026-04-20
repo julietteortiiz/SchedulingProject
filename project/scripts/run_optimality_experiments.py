@@ -12,12 +12,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GENERATOR = ROOT / "project" / "scripts" / "generate_duration_constraints.py"
-SCHEDULER = ROOT / "juliette.py"
-VALIDATOR = ROOT / "is_valid.pl"
+SCHEDULER = ROOT / "greedy_algorithm.py"
+VALIDATOR = ROOT / "is_valid_v2.pl"
 
-OPT_PATTERN = re.compile(r"^Opt\s+([0-9]*\.?[0-9]+)$", re.MULTILINE)
-MISSED_PATTERN = re.compile(r"^Couldnt enroll\s+(\d+)$", re.MULTILINE)
-SCHEDULE_PATTERN = re.compile(r"Course\tRoom\tTeacher\tTime\tStudents\n.*", re.DOTALL)
+SCHEDULE_PATTERN = re.compile(
+    r"Course\tRoom\tTeacher\tTime\tDays\tStudents\n.*", re.DOTALL
+)
 
 
 @dataclass(frozen=True)
@@ -38,8 +38,8 @@ class Case:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Generate multiple constraint/preference files, run juliette.py on each, "
-            "and record optimality results."
+            "Generate multiple constraint/preference files, run greedy_algorithm.py "
+            "on each, and record experiment results."
         )
     )
     parser.add_argument(
@@ -119,18 +119,43 @@ def format_seconds(value: float) -> str:
     return f"{value:.4f}"
 
 
-def extract_metric(pattern: re.Pattern[str], text: str, label: str) -> str:
-    match = pattern.search(text)
-    if not match:
-        raise RuntimeError(f"Could not find {label} in scheduler output.\n{text}")
-    return match.group(1)
-
-
 def extract_schedule(text: str) -> str:
     match = SCHEDULE_PATTERN.search(text)
     if not match:
         raise RuntimeError(f"Could not find schedule output.\n{text}")
     return match.group(0)
+
+
+def count_total_requests(prefs_path: Path) -> int:
+    total_requests = 0
+    with prefs_path.open() as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("Students\t"):
+                continue
+            total_requests += max(0, len(line.split()) - 1)
+    return total_requests
+
+
+def count_successful_enrollments(schedule_text: str) -> int:
+    total_successful = 0
+    for line in schedule_text.splitlines()[1:]:
+        if not line.strip():
+            continue
+        fields = line.split("\t", 5)
+        if len(fields) != 6:
+            raise RuntimeError(f"Unexpected schedule row format:\n{line}")
+        students = fields[5].strip()
+        if students:
+            total_successful += len(students.split())
+    return total_successful
+
+
+def format_ratio(successful: int, couldnt_enroll: int) -> str:
+    total_requests = successful + couldnt_enroll
+    if total_requests == 0:
+        return ""
+    return f"{successful / total_requests:.4f}".rstrip("0").rstrip(".")
 
 
 def main() -> None:
@@ -228,10 +253,21 @@ def main() -> None:
             )
             (output_dir / f"{case.name}_scheduler.stderr.txt").write_text(scheduled.stderr)
             continue
-        schedule_path.write_text(extract_schedule(scheduled.stdout))
+        schedule_text = extract_schedule(scheduled.stdout)
+        schedule_path.write_text(schedule_text)
 
-        optimality = extract_metric(OPT_PATTERN, scheduled.stdout, "optimality")
-        couldnt_enroll = extract_metric(MISSED_PATTERN, scheduled.stdout, "missed-enrollment count")
+        total_requests = count_total_requests(prefs_path)
+        successful = count_successful_enrollments(schedule_text)
+        couldnt_enroll = max(0, total_requests - successful)
+        validation_run = run_command(
+            ["perl", str(VALIDATOR), str(constraints_path), str(prefs_path), str(schedule_path)],
+            ROOT,
+        )
+        validation = "valid" if validation_run.returncode == 0 else "invalid"
+        if validation_run.returncode != 0:
+            (output_dir / f"{case.name}_validator.stderr.txt").write_text(
+                validation_run.stdout + validation_run.stderr
+            )
 
         rows.append(
             {
@@ -248,9 +284,9 @@ def main() -> None:
                 "credit_hour_weights": case.credit_hour_weights,
                 "generation_seconds": format_seconds(generation_seconds),
                 "scheduling_seconds": format_seconds(scheduling_seconds),
-                "couldnt_enroll": couldnt_enroll,
-                "optimality": optimality,
-                "validation": "not_checked_structured_constraints",
+                "couldnt_enroll": str(couldnt_enroll),
+                "optimality": format_ratio(successful, couldnt_enroll),
+                "validation": validation,
             }
         )
 

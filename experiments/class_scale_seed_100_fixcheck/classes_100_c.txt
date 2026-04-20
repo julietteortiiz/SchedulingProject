@@ -1,0 +1,150 @@
+Class Times	15
+Buildings	15
+1	B	Park	2
+2	B	Bettws	1
+3	B	OldLib	1
+4	B	Dalton	4
+5	B	Carpenter	1
+6	B	EngHouse	2
+7	B	Goodhart	1
+8	H	Sharpless	2
+9	H	KINSC	3
+10	H	Hilles	3
+11	H	Chase	2
+12	H	Hall	1
+13	H	Roberts	1
+14	H	Woodside	2
+15	H	Union	4
+Rooms	30
+1	1	106
+2	1	35
+3	2	116
+4	3	102
+5	4	115
+6	4	97
+7	4	74
+8	4	71
+9	5	104
+10	6	59
+11	6	100
+12	7	59
+13	8	103
+14	8	28
+15	9	94
+16	9	12
+17	9	53
+18	10	100
+19	10	112
+20	10	80
+21	11	19
+22	11	7
+23	12	27
+24	13	38
+25	14	110
+26	14	97
+27	15	26
+28	15	73
+29	15	22
+30	15	77
+Classes	100
+Teachers	50
+1	54	B	BMCChem	3	3
+2	70	H	HCHealth	3	2
+3	66	B	BMCHist	3	2
+4	34	B	BMCClass	4	2
+5	18	B	BMCPhys	2	2
+6	72	H	HCGender	4	2
+7	23	H	HCEcon	3	2
+8	78	H	HCMusic	3	2
+9	56	B	BMCPhys	3	2
+10	33	B	BMCCS	4	3
+11	83	H	HCSoc	4	3
+12	95	H	HCBio	4	3
+13	36	B	BMCTheater	3	2
+14	71	H	HCMath	3	2
+15	97	H	HCBio	3	3
+16	76	H	HCPhys	2	1
+17	100	H	HCHist	3	2
+18	5	B	BMCPhys	2	2
+19	67	B	BMCPhys	3	3
+20	45	B	BMCPsych	4	3
+21	25	B	BMCSoc	3	2
+22	50	B	BMCArtHist	3	3
+23	7	H	HCEcon	3	2
+24	46	B	BMCArtHist	3	3
+25	21	B	BMCSoc	3	3
+26	48	H	HCSoc	4	3
+27	55	H	HCMath	3	3
+28	89	B	BMCArtHist	2	2
+29	53	H	HCPsych	3	2
+30	80	H	HCHealth	4	3
+31	42	H	HCGender	3	2
+32	93	H	HCCS	3	2
+33	10	B	BMCCS	4	3
+34	4	B	BMCClass	4	3
+35	96	B	BMCChem	3	2
+36	13	B	BMCTheater	3	3
+37	63	B	BMCSoc	4	2
+38	62	H	HCPhys	4	3
+39	60	H	HCCompLit	2	1
+40	91	H	HCMusic	3	3
+41	58	H	HCCS	4	3
+42	31	H	HCGender	3	3
+43	57	H	HCCompLit	2	1
+44	59	B	BMCRus	4	2
+45	20	B	BMCPsych	4	3
+46	24	B	BMCArtHist	3	3
+47	69	B	BMCArch	2	2
+48	26	H	HCSoc	4	3
+49	51	B	BMCEcon	3	3
+50	22	B	BMCArtHist	3	3
+51	49	B	BMCEcon	3	3
+52	82	B	BMCEcon	3	3
+53	29	H	HCPsych	3	3
+54	1	B	BMCChem	3	2
+55	27	H	HCMath	3	3
+56	9	B	BMCPhys	3	2
+57	43	H	HCCompLit	2	2
+58	41	H	HCCS	4	3
+59	44	B	BMCRus	4	3
+60	39	H	HCCompLit	2	1
+61	92	B	BMCArch	3	2
+62	38	H	HCPhys	4	3
+63	37	B	BMCSoc	4	2
+64	99	B	BMCPhil	3	2
+65	88	B	BMCCS	2	1
+66	3	B	BMCHist	3	2
+67	19	B	BMCPhys	3	2
+68	77	H	HCLing	4	3
+69	47	B	BMCArch	2	2
+70	2	H	HCHealth	3	2
+71	14	H	HCMath	3	3
+72	6	H	HCGender	4	2
+73	98	H	HCLing	3	2
+74	90	B	BMCEng	4	3
+75	84	H	HCCS	3	3
+76	16	H	HCPhys	2	1
+77	68	H	HCLing	4	2
+78	8	H	HCMusic	3	3
+79	86	B	BMCCS	4	3
+80	30	H	HCHealth	4	3
+81	94	B	BMCAnth	2	2
+82	52	B	BMCEcon	3	3
+83	11	H	HCSoc	4	3
+84	75	H	HCCS	3	2
+85	87	H	HCBio	3	2
+86	79	B	BMCCS	4	2
+87	85	H	HCBio	3	3
+88	65	B	BMCCS	2	2
+89	28	B	BMCArtHist	2	1
+90	74	B	BMCEng	4	3
+91	40	H	HCMusic	3	3
+92	61	B	BMCArch	3	2
+93	32	H	HCCS	3	2
+94	81	B	BMCAnth	2	2
+95	12	H	HCBio	4	3
+96	35	B	BMCChem	3	2
+97	15	H	HCBio	3	2
+98	73	H	HCLing	3	2
+99	64	B	BMCPhil	3	3
+100	17	H	HCHist	3	2

@@ -1,0 +1,99 @@
+% This is the same content as `overleaf/sections/section3.tex`.
+% You can rename it to `.tex` or include it via \input{...}.
+
+\subsection{Algorithm Description, Analysis and Discussion}\label{sec:algorithm}
+
+\paragraph{Problem.}
+Given (i) room capacities, (ii) discrete time blocks, (iii) teacher--course assignments, and (iv) student request lists (4 requested courses per student), we must produce a \emph{valid} schedule and then enroll students so that no hard constraint is violated. Our objective value is the total number of fulfilled course requests (1 point per student-course enrollment), with an absolute upper bound of $4 \cdot |\text{Students}|$.
+
+\paragraph{High-level idea.}
+Our approach is a greedy heuristic that prioritizes high-demand and high-conflict courses early. Concretely, we:
+(1) score course popularity and pairwise conflicts from student preference lists,
+(2) greedily assign rooms within each building based on popularity and room capacity,
+(3) greedily assign times (respecting room/teacher conflicts and attempting to separate highly overlapping course pairs), and
+(4) greedily enroll each student into requested courses when there is no time conflict and the course still has remaining capacity.
+
+\paragraph{Step 1: Popularity and overlap computation.}
+From the student preference file, we compute:
+\begin{itemize}
+  \item \textbf{Popularity} of a course = number of students who requested it.
+  \item \textbf{Overlap score} of a course pair = number of students who requested both courses (with extra weight when the two courses share a teacher, so teacher conflicts get scheduled earlier).
+\end{itemize}
+We then sort all course pairs by decreasing overlap score. Intuitively, these are the pairs most worth separating in time.
+
+\paragraph{Step 2: Room assignment (greedy within building).}
+Within each building, we sort courses by decreasing popularity and rooms by decreasing capacity, then match them in that order (popular courses get larger rooms). If a building contains more courses than rooms, we distribute courses across rooms as evenly as possible, still prioritizing larger rooms first.
+
+\paragraph{Step 3: Time assignment (greedy, conflict-aware).}
+We assign a contiguous time interval to each course in 30-minute blocks, using:
+\[
+\text{blocks} = \left\lceil \left(\frac{\text{credit\_hours}}{\text{day\_frequency}}\right) \cdot 2 \right\rceil.
+\]
+For each high-overlap pair $(c_1,c_2)$, we schedule one course first, then attempt to schedule the other while avoiding overlap with the first course’s time interval (when possible). We maintain two matrices over (time block $\times$ weekday):
+\begin{itemize}
+  \item a \textbf{teacher occupancy} matrix to prevent a teacher from teaching two courses at the same time, and
+  \item a \textbf{room occupancy} matrix to prevent two courses from using the same room at the same time.
+\end{itemize}
+If a course cannot be placed in its initially assigned room, we retry by moving it to another room (first within the same building, then within the same college) and searching again.
+
+\paragraph{Step 4: Student enrollment (greedy).}
+For each student, we iterate through the requested courses and enroll the student if (i) none of the course’s meeting blocks conflict with the student’s current schedule and (ii) the course room still has capacity. This ensures students never attend two classes at the same time and courses never exceed room capacity.
+
+\subsubsection*{Validity (proof sketch)}
+We argue that the output schedule is valid by construction.
+\begin{itemize}
+  \item \textbf{Room conflicts.} A course is only assigned to a room/time if every meeting block is absent from the room-occupancy matrix. After assignment, we update the matrix for every occupied block. Therefore, no two scheduled courses share a room in the same time block.
+  \item \textbf{Teacher conflicts.} Similarly, a course is only assigned to a time if its teacher is absent from the teacher-occupancy matrix for all meeting blocks, and we update that matrix after assignment. Therefore, no teacher is double-booked.
+  \item \textbf{Room capacity.} During enrollment, we only add a student to a course if the number of already-enrolled students is strictly less than the assigned room’s capacity. Therefore, enrollment never exceeds capacity.
+  \item \textbf{Student time conflicts.} For each student we maintain a (time block $\times$ weekday) occupancy grid. We only enroll a student in a course if all required blocks are free, and then we mark those blocks as occupied. Therefore, no student is enrolled in overlapping courses.
+\end{itemize}
+
+\subsubsection*{Time complexity (worst-case, high-level)}
+Let $C$ be the number of courses, $R$ the number of rooms, $T$ the number of time blocks, and $S$ the number of students (each with at most 4 requests).
+\begin{itemize}
+  \item Popularity/overlap computation: $O(S)$ students $\times$ constant work per preference list (at most $\binom{4}{2}$ pairs), so $O(S)$.
+  \item Room assignment: sorting dominates, roughly $O(C\log C + R\log R)$ across all buildings.
+  \item Time assignment: for each course we may scan up to $T$ start times for a constant number of day-combinations, so approximately $O(C \cdot T)$ (with a small multiplicative factor from course duration in blocks).
+  \item Enrollment: $O(S)$ students $\times$ constant number of requested courses $\times$ constant number of meeting blocks, so $O(S)$.
+\end{itemize}
+Overall, the time assignment phase is the main driver in practice when $C$ becomes large.
+
+\subsubsection*{Discussion of design choices}
+We chose a greedy/list-scheduling style heuristic because the full problem is a large combinatorial assignment under multiple constraints (room, teacher, time, and capacity), and exact optimization quickly becomes impractical at the input sizes we tested. Our algorithm is most similar to (i) greedy graph-coloring ideas (courses as vertices with overlap edges, time slots as ``colors''), (ii) bin-packing intuition (assigning popular courses to large rooms), and (iii) classic list scheduling (place the highest-priority items first).
+
+The most difficult complication was that an early time/room decision can block many later courses. To mitigate this, we (a) schedule high-overlap pairs early, (b) allow limited repair by moving a course to a different room when it fails to find a time, and (c) keep the conflict checks incremental via occupancy matrices.
+
+\subsection{Experimental Analysis}\label{sec:experiments}
+
+\paragraph{Metrics.}
+We report:
+\begin{itemize}
+  \item \textbf{Runtime:} wall-clock scheduling time in seconds (excluding file I/O).
+  \item \textbf{Quality:} achieved student-preference value divided by the best-case upper bound $4\cdot|\text{Students}|$.
+\end{itemize}
+All generated schedules are validated with the provided validator script (``valid'' instances only).
+
+\subsubsection*{1. Time analysis}
+We vary the number of classes while holding other parameters fixed (e.g., number of rooms/time blocks), and measure the scheduling runtime. Figure~\ref{fig:time-analysis} and Table~\ref{tab:time-scale} summarize the results averaged over seeds 100--500.
+
+\input{overleaf/figures/time_analysis.tex}
+\input{overleaf/tables/class_scale.tex}
+
+\subsubsection*{2. Solution quality analysis}
+We evaluate quality under multiple scenario variations (rooms, number of time blocks, number of students, room capacity ranges, and course-length distributions). Figure~\ref{fig:quality-analysis} and Table~\ref{tab:quality-scenarios} report the mean quality per scenario (seeds 100--500), using the best-case upper bound as a proxy for optimal.
+
+\input{overleaf/figures/quality_analysis.tex}
+\input{overleaf/tables/optimality.tex}
+
+\paragraph{Lower bound (empirical).}
+Across the tested scenarios/seeds, the minimum observed quality fraction provides an empirical lower bound for these distributions of instances (see \texttt{overleaf/summary.txt} for the exact minimum and where it occurred).
+
+\subsection{Bryn Mawr / Haverford scheduling scenarios}\label{sec:bmc-hc}
+To connect with real scheduling constraints, we interpret our scenario experiments as actionable levers a registrar can adjust:
+\begin{itemize}
+  \item \textbf{More rooms} and \textbf{more time blocks} increase flexibility and generally improve quality.
+  \item \textbf{Tighter capacities} reduce quality by preventing popular courses from enrolling all interested students.
+  \item A larger share of \textbf{long multi-block classes} reduces quality because they are harder to place without conflicts.
+\end{itemize}
+These scenarios correspond to implementable policy choices (room inventory, time-grid design, and capacity planning) that can be applied before registration to reduce expected conflicts.
+

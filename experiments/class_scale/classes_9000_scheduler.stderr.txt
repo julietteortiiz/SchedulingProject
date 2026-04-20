@@ -1,0 +1,5 @@
+SCHED_SUMMARY
+couldnt_enroll=54
+student_pref_value=281
+best_case_pref_value=400
+optimality=0.702500

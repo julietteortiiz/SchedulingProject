@@ -1,25 +1,27 @@
-juliette: juliette.py
-	python3 juliette.py demo_studentprefs.txt 
+final: greedy_algorithm.py
+	python3 greedy_algorithm.py project/brynmawr/real_student_prefs.txt project/brynmawr/real_constraints.txt > a_schedule.txt
 
-algorithm: algorithm.py
-	python3 algorithm.py demo_studentprefs.txt demo_constraints.txt > our_schedule.txt
+valid: is_valid_v2.pl
+	perl is_valid_v2.pl project/brynmawr/real_constraints.txt project/brynmawr/real_student_prefs.txt a_schedule.txt
 
-valid: is_valid.pl
-	perl is_valid.pl demo_constraints.txt demo_studentprefs.txt our_schedule.txt
+optimality:
+	set -e; \
+	for c in experiments/optimality/*_c.txt; do \
+		base="$${c%_c.txt}"; \
+		p="$${base}_p.txt"; \
+		s="/tmp/$$(basename "$$base")_schedule.txt"; \
+		echo "== $$(basename "$$base") =="; \
+		python3 greedy_algorithm.py "$$p" "$$c" | tee /tmp/run.txt | awk 'BEGIN{keep=0} /^Course\tRoom\tTeacher\tTime\tDays\tStudents$$/{keep=1} keep' > "$$s"; \
+		perl is_valid_v2.pl "$$c" "$$p" "$$s"; \
+	done
 
-<<<<<<< HEAD
-10000schedule:
-	python3 algorithm.py p_10000.txt c_10000.txt > our_schedule100000.txt
-
-100:
-	perl is_valid.pl c_100.txt p_100.txt our_schedule100.txt
-
-1000:
-	perl is_valid.pl c_1000.txt p_1000.txt our_schedule1000.txt
-
-10000:
-	perl is_valid.pl c_10000.txt p_10000.txt our_schedule1000.txt
-=======
-new: new_algorithm.py
-	python3 new_algorithm.py p.txt c.txt
->>>>>>> 0300c8109dd988f29278374e50a94fb1fd49aa7b
+class_scale:
+	set -e; \
+	for c in experiments/class_scale/*_c.txt; do \
+		base="$${c%_c.txt}"; \
+		p="$${base}_p.txt"; \
+		s="/tmp/$$(basename "$$base")_schedule.txt"; \
+		echo "== $$(basename "$$base") =="; \
+		python3 greedy_algorithm.py "$$p" "$$c" | tee /tmp/run.txt | awk 'BEGIN{keep=0} /^Course\tRoom\tTeacher\tTime\tDays\tStudents$$/{keep=1} keep' > "$$s"; \
+		perl is_valid_v2.pl "$$c" "$$p" "$$s"; \
+	done

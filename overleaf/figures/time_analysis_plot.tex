@@ -1,0 +1,17 @@
+% Plot-only version (no figure/caption). Safe for rendering to PDF/JPEG.
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.9\linewidth,
+  height=6cm,
+  xmode=log, ymode=log,
+  log basis x={10}, log basis y={10},
+  xlabel={Number of classes},
+  ylabel={Scheduling time (seconds)},
+  grid=both,
+  legend style={at={(0.02,0.98)},anchor=north west},
+]
+\addplot+[mark=*, thick] table [col sep=comma, x=classes, y=scheduling_seconds_mean] {overleaf/data/class_scale_agg.csv};
+\addlegendentry{Mean over seeds}
+\end{axis}
+\end{tikzpicture}
+
